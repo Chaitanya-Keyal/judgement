@@ -247,6 +247,10 @@ export function loadCurrent(): SavedGame | null {
   }
 }
 
+export function clearCurrent() {
+  localStorage.removeItem(STORAGE_KEY);
+}
+
 export function loadHistory(): FinishedGame[] {
   try {
     return JSON.parse(localStorage.getItem(HISTORY_KEY) ?? '[]') as FinishedGame[];
@@ -255,13 +259,23 @@ export function loadHistory(): FinishedGame[] {
   }
 }
 
+export function gameId(game: SavedGame): string {
+  return game.id ?? game.fileName;
+}
+
 export function clearHistory() {
   localStorage.removeItem(HISTORY_KEY);
 }
 
+export function removeFromHistory(id: string): FinishedGame[] {
+  const history = loadHistory().filter((g) => g.id !== id);
+  localStorage.setItem(HISTORY_KEY, JSON.stringify(history));
+  return history;
+}
+
 /** Adds a finished game to the history, replacing any earlier copy (e.g. after an edit). */
 export function recordFinished(game: SavedGame): FinishedGame[] {
-  const id = game.id ?? game.fileName;
+  const id = gameId(game);
   const history = loadHistory().filter((g) => g.id !== id);
   history.push({ id, finishedAt: new Date().toISOString(), rounds: clone(game.rounds) });
   localStorage.setItem(HISTORY_KEY, JSON.stringify(history));

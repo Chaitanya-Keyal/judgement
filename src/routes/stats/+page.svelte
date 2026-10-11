@@ -1,6 +1,12 @@
 <script lang="ts">
   import { choose } from '#lib/dialog.svelte.ts';
-  import { clearHistory, loadHistory } from '#lib/game.ts';
+  import {
+    clearHistory,
+    loadHistory,
+    playersOf,
+    removeFromHistory,
+    type FinishedGame,
+  } from '#lib/game.ts';
   import Stats from '#lib/Stats.svelte';
 
   let history = $state(loadHistory());
@@ -20,10 +26,28 @@
       history = [];
     }
   }
+
+  async function confirmDelete(g: FinishedGame) {
+    const date = new Date(g.finishedAt).toLocaleDateString(undefined, {
+      day: 'numeric',
+      month: 'short',
+      year: 'numeric',
+    });
+    const answer = await choose(
+      'Delete Game',
+      `Delete the game from ${date} (${playersOf(g.rounds).join(', ')})? It will no longer count towards your stats.`,
+      [
+        { label: 'Cancel', value: 'cancel', variant: 'ghost' },
+        { label: 'Delete game', value: 'delete', variant: 'danger' },
+      ],
+      'error',
+    );
+    if (answer === 'delete') history = removeFromHistory(g.id);
+  }
 </script>
 
 <svelte:head>
   <title>Stats | Judgement</title>
 </svelte:head>
 
-<Stats {history} onclear={confirmClear} />
+<Stats {history} onclear={confirmClear} ondelete={confirmDelete} />

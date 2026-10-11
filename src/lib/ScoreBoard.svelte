@@ -22,7 +22,7 @@
         <span class="player">
           {player}
           {#if hasLeader && rank === 1}
-            <Crown size={big ? 18 : 14} />
+            <Crown size={18} />
           {/if}
         </span>
         <span class="score" class:neg={score < 0}>{score}</span>
@@ -34,12 +34,13 @@
 <style>
   .board {
     align-self: start;
+    font-size: 1.2rem;
   }
 
   .big {
     width: min(520px, 100%);
     margin: 0 auto;
-    font-size: 1.15rem;
+    font-size: 1.25rem;
   }
 
   h2 {
@@ -48,7 +49,7 @@
     justify-content: center;
     gap: 0.6rem;
     margin: 0 0 1rem;
-    font-size: 1.2rem;
+    font-size: 1.4rem;
   }
 
   .big h2 {
@@ -63,7 +64,7 @@
     padding: 0;
     display: flex;
     flex-direction: column;
-    gap: 0.35rem;
+    gap: 0.45rem;
   }
 
   li {
@@ -71,7 +72,7 @@
     grid-template-columns: 1.6em 1fr auto;
     align-items: center;
     gap: 0.6rem;
-    padding: 0.55rem 0.75rem;
+    padding: 0.8rem 0.9rem;
     border-radius: var(--radius-sm);
     background: var(--surface-2);
     border: 1px solid transparent;
@@ -98,6 +99,7 @@
   }
 
   .score {
+    font-size: 1.15em;
     font-weight: 700;
     font-variant-numeric: tabular-nums;
   }

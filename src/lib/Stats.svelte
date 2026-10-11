@@ -8,7 +8,12 @@
   import { downloadLog, newLogName, playersOf, winners, type FinishedGame } from './game';
   import { computeStats } from './stats';
 
-  let { history, onclear }: { history: FinishedGame[]; onclear: () => void } = $props();
+  let {
+    history,
+    onclear,
+    ondelete,
+  }: { history: FinishedGame[]; onclear: () => void; ondelete: (g: FinishedGame) => void } =
+    $props();
 
   const stats = $derived(computeStats(history));
   const recent = $derived([...history].reverse());
@@ -124,6 +129,14 @@
               onclick={() => download(g)}
             >
               <Download size={16} />
+            </button>
+            <button
+              class="ghost small icon-only delete"
+              title="Delete this game"
+              aria-label="Delete this game"
+              onclick={() => ondelete(g)}
+            >
+              <Trash2 size={16} />
             </button>
           </li>
         {/each}
@@ -311,6 +324,11 @@
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
+  }
+
+  .delete:hover {
+    color: var(--danger);
+    border-color: rgb(255 93 108 / 0.4);
   }
 
   .icon-only {

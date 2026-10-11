@@ -14,7 +14,7 @@
   import Plus from '@lucide/svelte/icons/plus';
   import RotateCcw from '@lucide/svelte/icons/rotate-ccw';
   import Table from '@lucide/svelte/icons/table';
-  import Target from '@lucide/svelte/icons/target';
+  import Trash2 from '@lucide/svelte/icons/trash-2';
   import Trophy from '@lucide/svelte/icons/trophy';
   import Users from '@lucide/svelte/icons/users';
   import EditRound from '#lib/EditRound.svelte';
@@ -22,12 +22,14 @@
   import ScoreChart from '#lib/ScoreChart.svelte';
   import Scoresheet from '#lib/Scoresheet.svelte';
   import SuitIcon from '#lib/SuitIcon.svelte';
-  import { showMessage } from '#lib/dialog.svelte.ts';
+  import { choose, showMessage } from '#lib/dialog.svelte.ts';
   import { digitsOnly } from '#lib/digits.ts';
   import {
+    clearCurrent,
     createRounds,
     currentRound,
     downloadLog,
+    gameId,
     handsError,
     judgementError,
     loadCurrent,
@@ -37,6 +39,7 @@
     parseLog,
     playersOf,
     recordFinished,
+    removeFromHistory,
     resetRounds,
     round,
     saveCurrent,
@@ -267,6 +270,28 @@
     enterGame();
   }
 
+  async function discardGame() {
+    if (!game) return;
+    const finished = currentRound(game.rounds) === 0;
+    const answer = await choose(
+      'Discard Game',
+      finished
+        ? 'This deletes the game and removes it from your stats. Download the log first if you want a copy.'
+        : 'This deletes the game in progress. It will not count towards your stats.',
+      [
+        { label: 'Cancel', value: 'cancel', variant: 'ghost' },
+        { label: 'Discard game', value: 'discard', variant: 'danger' },
+      ],
+      'error',
+    );
+    if (answer !== 'discard') return;
+    if (finished) history = removeFromHistory(gameId(game));
+    clearCurrent();
+    game = null;
+    saved = null;
+    ui.screen = 'home';
+  }
+
   function focusFirst(node: HTMLElement) {
     node.querySelector('input')?.focus();
   }
@@ -289,6 +314,9 @@
     </button>
     <button class="ghost small" onclick={() => game && downloadLog(game)} title="Download game log">
       <Download size={16} /> Download log
+    </button>
+    <button class="ghost small discard" onclick={discardGame} title="Delete this game">
+      <Trash2 size={16} /> Discard
     </button>
   </div>
 {/snippet}
@@ -435,20 +463,27 @@
         {:else}
           <form class="card entry" onsubmit={submitHands} {@attach focusFirst}>
             <h2>Enter the Hands Made</h2>
+            <div class="cols" aria-hidden="true">
+              <span>Called</span>
+              <span>Made</span>
+            </div>
             {#each order as p (p)}
+              {@const made = handsInputs[p] ?? ''}
               <label class="row">
-                <span class="name">
-                  {p}
-                  <span class="called" title="Judgement"
-                    ><Target size={13} /> {judgementInputs[p]}</span
-                  >
-                </span>
+                <span class="name">{p}</span>
+                <span
+                  class="called"
+                  class:hit={made !== '' && made === judgementInputs[p]}
+                  class:miss={made !== '' && made !== judgementInputs[p]}
+                  aria-label="{p} called {judgementInputs[p]}">{judgementInputs[p]}</span
+                >
                 <input
                   type="text"
                   inputmode="numeric"
                   autocomplete="off"
                   placeholder="0"
-                  value={handsInputs[p] ?? ''}
+                  aria-label="{p} made"
+                  value={made}
                   oninput={digitsOnly(handsInputs, p, curr)}
                 />
               </label>
@@ -545,6 +580,11 @@
 {/if}
 
 <style>
+  .toolbar .discard:hover {
+    color: var(--danger);
+    border-color: rgb(255 93 108 / 0.4);
+  }
+
   .toolbar {
     display: flex;
     justify-content: flex-end;
@@ -792,7 +832,7 @@
   /* Game */
   .game {
     display: grid;
-    grid-template-columns: 250px 1fr 250px;
+    grid-template-columns: 300px 1fr 250px;
     grid-template-areas:
       'board entry trump'
       'lower lower lower';
@@ -902,16 +942,50 @@
     color: var(--danger);
   }
 
-  .called {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.25rem;
-    font-size: 0.8rem;
+  .cols {
+    display: flex;
+    justify-content: flex-end;
+    gap: 0.75rem;
+    margin-bottom: 0.25rem;
+  }
+
+  .cols span {
+    width: 4.5rem;
+    text-align: center;
+    font-size: 0.7rem;
     font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
     color: var(--muted);
-    background: var(--surface-3);
-    border-radius: 999px;
-    padding: 0.15rem 0.5rem;
+  }
+
+  .called {
+    width: 4.5rem;
+    padding: 0.45rem;
+    text-align: center;
+    font-size: 1.25rem;
+    font-weight: 700;
+    font-variant-numeric: tabular-nums;
+    color: #8cc2ff;
+    background: var(--accent-soft);
+    border: 1px solid rgb(47 134 255 / 0.3);
+    border-radius: var(--radius-sm);
+    transition:
+      color 140ms,
+      background 140ms,
+      border-color 140ms;
+  }
+
+  .called.hit {
+    color: var(--success);
+    background: rgb(61 220 151 / 0.12);
+    border-color: rgb(61 220 151 / 0.35);
+  }
+
+  .called.miss {
+    color: var(--danger);
+    background: rgb(255 93 108 / 0.1);
+    border-color: rgb(255 93 108 / 0.3);
   }
 
   .row input {
