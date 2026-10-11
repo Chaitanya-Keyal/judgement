@@ -31,3 +31,7 @@ GitHub Pages via `.github/workflows/deploy.yml`.
 - `src/lib/stats.ts`: cross-game stats
 - `src/routes/`: play (`/`), rules (`/rules`), stats (`/stats`)
 - `src/service-worker/`: offline precache
+
+## License
+
+[MIT](LICENSE)

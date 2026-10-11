@@ -36,5 +36,6 @@
     "#lib": "./src/lib",
     "#lib/*": "./src/lib/*"
   },
-  "description": "Scorekeeper for Judgement, the card game where you call your hands"
+  "description": "Scorekeeper for Judgement, the card game where you call your hands",
+  "license": "MIT"
 }
