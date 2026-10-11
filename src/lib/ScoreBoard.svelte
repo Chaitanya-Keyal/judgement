@@ -33,7 +33,6 @@
 
 <style>
   .board {
-    align-self: start;
     font-size: 1.2rem;
   }
 

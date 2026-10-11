@@ -416,17 +416,22 @@
     </div>
   </form>
 {:else if game && info}
-  {@render toolbar()}
+  <div class="game-head">
+    <div class="round-head">
+      <h1>Round of {curr}</h1>
+      <div class="progress-row">
+        <div class="progress" aria-hidden="true">
+          <span style:width="{((total - curr) / total) * 100}%"></span>
+        </div>
+        <span class="progress-label">{total - curr} of {total} rounds played</span>
+      </div>
+    </div>
+    {@render toolbar()}
+  </div>
   <div class="game">
     <div class="area-board"><ScoreBoard rounds={game.rounds} /></div>
 
     <section class="area-entry">
-      <div class="round-head">
-        <h1>Round of {curr}</h1>
-        <div class="progress" aria-hidden="true">
-          <span style:width="{((total - curr) / total) * 100}%"></span>
-        </div>
-      </div>
       {#key `${curr}-${phase}`}
         {#if phase === 'judgement'}
           <form class="card entry" onsubmit={submitJudgement} {@attach focusFirst}>
@@ -504,13 +509,15 @@
 
     <aside class="area-trump card">
       <h2>Trump</h2>
-      <div class="playing-card {info.suit.toLowerCase()}">
-        <span class="corner"><SuitIcon suit={info.suit} size={16} /></span>
-        <img src="/suits/{info.suit}.png" alt={info.suit} />
-        <span class="corner flip"><SuitIcon suit={info.suit} size={16} /></span>
+      <div class="trump-body">
+        <div class="playing-card {info.suit.toLowerCase()}">
+          <span class="corner"><SuitIcon suit={info.suit} size={16} /></span>
+          <img src="/suits/{info.suit}.png" alt={info.suit} />
+          <span class="corner flip"><SuitIcon suit={info.suit} size={16} /></span>
+        </div>
+        <p class="suit-name">{info.suit}</p>
+        <p class="dealer">Dealer <strong>{info.dealer}</strong></p>
       </div>
-      <p class="suit-name">{info.suit}</p>
-      <p class="dealer">Dealer <strong>{info.dealer}</strong></p>
     </aside>
 
     <section class="area-lower card">
@@ -590,6 +597,10 @@
     justify-content: flex-end;
     gap: 0.5rem;
     margin: -0.5rem 0 1rem;
+  }
+
+  .game-head .toolbar {
+    margin: 0;
   }
 
   /* Home */
@@ -830,14 +841,39 @@
   }
 
   /* Game */
+  .game-head {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 1rem;
+    flex-wrap: wrap;
+    margin-bottom: 1.5rem;
+  }
+
+  /* The three top cards share one row height, set by the tallest. */
   .game {
     display: grid;
-    grid-template-columns: 300px 1fr 250px;
+    grid-template-columns: minmax(260px, 1fr) minmax(0, 1.25fr) minmax(220px, 0.85fr);
     grid-template-areas:
       'board entry trump'
       'lower lower lower';
     gap: 1.5rem;
-    align-items: start;
+    align-items: stretch;
+  }
+
+  .area-board :global(.board),
+  .entry,
+  .area-trump {
+    height: 100%;
+  }
+
+  .area-board :global(.board h2),
+  .entry h2,
+  .area-trump h2 {
+    margin: 0 0 1.25rem;
+    text-align: center;
+    font-size: 1.3rem;
+    color: var(--text);
   }
 
   .area-board {
@@ -858,19 +894,26 @@
     min-width: 0;
   }
 
-  .round-head {
-    max-width: 420px;
-    margin: 0 auto 1.25rem;
-    text-align: center;
-  }
-
   .round-head h1 {
-    margin: 0 0 0.75rem;
+    margin: 0 0 0.6rem;
     font-size: clamp(2rem, 4vw, 2.75rem);
     line-height: 1.1;
   }
 
+  .progress-row {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+  }
+
+  .progress-label {
+    font-size: 0.85rem;
+    color: var(--muted);
+    white-space: nowrap;
+  }
+
   .progress {
+    width: 200px;
     height: 4px;
     border-radius: 999px;
     background: var(--surface-3);
@@ -886,17 +929,15 @@
   }
 
   .entry {
-    max-width: 420px;
-    margin: 0 auto;
+    display: flex;
+    flex-direction: column;
     animation: rise 220ms ease-out;
   }
 
-  .entry h2 {
-    margin: 0 0 1rem;
-    text-align: center;
-    font-size: 1.15rem;
-    color: var(--muted);
-    font-weight: 500;
+  /* Pin the tally and buttons to the bottom of the card. */
+  .entry .tally {
+    margin-top: auto;
+    padding-top: 1rem;
   }
 
   .row {
@@ -1037,11 +1078,16 @@
     flex: 1;
   }
 
-  .area-trump h2 {
-    margin: 0 0 1.25rem;
-    font-size: 1.15rem;
-    color: var(--muted);
-    font-weight: 500;
+  .area-trump {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .trump-body {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
   }
 
   .playing-card {
@@ -1201,7 +1247,11 @@
       grid-template-areas: 'trump' 'entry' 'board' 'lower';
     }
 
-    .area-trump {
+    .area-trump h2 {
+      display: none;
+    }
+
+    .trump-body {
       display: grid;
       grid-template-columns: auto 1fr;
       column-gap: 1.25rem;
@@ -1209,12 +1259,16 @@
       align-items: center;
     }
 
-    .area-trump > * {
+    .trump-body > * {
       grid-column: 2;
     }
 
-    .area-trump h2 {
-      margin: 0;
+    .suit-name::before {
+      content: 'Trump: ';
+      font-family: 'Inter Variable', sans-serif;
+      font-size: 0.9rem;
+      font-weight: 500;
+      color: var(--muted);
     }
 
     .playing-card {
