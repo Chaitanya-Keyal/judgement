@@ -22,8 +22,24 @@ export interface Rounds {
   [round: string]: RoundInfo | Record<string, number> | number;
 }
 
+/** Bids typed into the current round but not yet submitted. */
+export interface Draft {
+  round: number;
+  phase: 'judgement' | 'hands';
+  judgements: Record<string, string>;
+  hands: Record<string, string>;
+}
+
 export interface SavedGame {
+  id?: string;
   fileName: string;
+  rounds: Rounds;
+  draft?: Draft;
+}
+
+export interface FinishedGame {
+  id: string;
+  finishedAt: string;
   rounds: Rounds;
 }
 
@@ -31,6 +47,7 @@ const SUITS: Suit[] = ['Spades', 'Hearts', 'Clubs', 'Diamonds'];
 const SUIT_ICONS = ['♠', '♥', '♣', '♦'];
 const META_KEYS = ['suit', 'suit_icon', 'dealer'];
 const STORAGE_KEY = 'judgement:current';
+const HISTORY_KEY = 'judgement:history';
 
 // JSON round-trip rather than structuredClone: callers may pass Svelte state proxies.
 const clone = <T>(v: T): T => JSON.parse(JSON.stringify(v));
@@ -111,7 +128,22 @@ export function scoreFor(judgement: number, hands: number): number {
   return 10 * hands;
 }
 
-export function completeRound(
+/** Rounds already played, in play order (highest first). */
+export function playedRounds(rounds: Rounds): number[] {
+  const out: number[] = [];
+  for (let i = totalRounds(rounds); i >= rounds.completed_rounds; i--) out.push(i);
+  return out;
+}
+
+function recomputeScores(rounds: Rounds) {
+  for (const p of playersOf(rounds)) rounds.scores[p] = 0;
+  for (const n of playedRounds(rounds)) {
+    for (const p of playersOf(rounds)) rounds.scores[p] += playerRound(rounds, n, p).score;
+  }
+}
+
+/** Records the result of round `n`, as a new round or a correction of a played one. */
+export function setRound(
   rounds: Rounds,
   n: number,
   judgements: Record<string, number>,
@@ -123,18 +155,56 @@ export function completeRound(
     pr.judgement = judgements[p];
     pr.hands = hands[p];
     pr.score = scoreFor(pr.judgement, pr.hands);
-    next.scores[p] += pr.score;
   }
-  next.completed_rounds = n;
+  next.completed_rounds = Math.min(next.completed_rounds, n);
+  recomputeScores(next);
   return next;
 }
 
-export function standings(rounds: Rounds): [string, number][] {
-  return Object.entries(rounds.scores).sort((a, b) => b[1] - a[1]);
+export function judgementError(n: number, values: number[]): string | null {
+  if (values.reduce((a, b) => a + b, 0) === n) {
+    return 'Total Judgement cannot be equal to the number of hands! Someone has to lose!';
+  }
+  return null;
 }
 
-export function newLogName(): string {
-  const d = new Date();
+export function handsError(n: number, values: number[]): string | null {
+  if (values.reduce((a, b) => a + b, 0) !== n) {
+    return 'Total Hands should be equal to the number of hands!';
+  }
+  return null;
+}
+
+/** Running total for each player after every played round, in play order. */
+export function cumulativeScores(rounds: Rounds): Record<string, number[]> {
+  const out: Record<string, number[]> = {};
+  for (const p of playersOf(rounds)) {
+    let total = 0;
+    out[p] = playedRounds(rounds).map((n) => (total += playerRound(rounds, n, p).score));
+  }
+  return out;
+}
+
+export function winners(rounds: Rounds): string[] {
+  const top = Math.max(...Object.values(rounds.scores));
+  return Object.keys(rounds.scores).filter((p) => rounds.scores[p] === top);
+}
+
+/** Players sorted by score, with shared ranks for ties (1, 1, 3, ...). */
+export function standings(rounds: Rounds): { player: string; score: number; rank: number }[] {
+  const sorted = Object.entries(rounds.scores).sort((a, b) => b[1] - a[1]);
+  return sorted.map(([player, score]) => ({
+    player,
+    score,
+    rank: sorted.findIndex(([, s]) => s === score) + 1,
+  }));
+}
+
+export function newId(): string {
+  return crypto.randomUUID?.() ?? `${Date.now()}-${Math.random().toString(36).slice(2)}`;
+}
+
+export function newLogName(d = new Date()): string {
   const p = (x: number) => String(x).padStart(2, '0');
   return (
     `judgment_game_log_${p(d.getDate())}-${p(d.getMonth() + 1)}-${d.getFullYear()}_` +
@@ -180,4 +250,25 @@ export function loadCurrent(): SavedGame | null {
 
 export function clearCurrent() {
   localStorage.removeItem(STORAGE_KEY);
+}
+
+export function loadHistory(): FinishedGame[] {
+  try {
+    return JSON.parse(localStorage.getItem(HISTORY_KEY) ?? '[]') as FinishedGame[];
+  } catch {
+    return [];
+  }
+}
+
+export function clearHistory() {
+  localStorage.removeItem(HISTORY_KEY);
+}
+
+/** Adds a finished game to the history, replacing any earlier copy (e.g. after an edit). */
+export function recordFinished(game: SavedGame): FinishedGame[] {
+  const id = game.id ?? game.fileName;
+  const history = loadHistory().filter((g) => g.id !== id);
+  history.push({ id, finishedAt: new Date().toISOString(), rounds: clone(game.rounds) });
+  localStorage.setItem(HISTORY_KEY, JSON.stringify(history));
+  return history;
 }

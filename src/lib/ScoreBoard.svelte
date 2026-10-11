@@ -6,9 +6,8 @@
   let { rounds, big = false }: { rounds: Rounds; big?: boolean } = $props();
 
   const rows = $derived(standings(rounds));
-  const top = $derived(rows[0]?.[1]);
   // Only crown someone once scores actually differ.
-  const hasLeader = $derived(rows.some(([, s]) => s !== top));
+  const hasLeader = $derived(rows.some((r) => r.rank !== 1));
 </script>
 
 <section class="card board" class:big>
@@ -17,12 +16,12 @@
     Score Board
   </h2>
   <ol>
-    {#each rows as [player, score], i (player)}
-      <li class:leader={hasLeader && score === top}>
-        <span class="rank">{i + 1}</span>
+    {#each rows as { player, score, rank } (player)}
+      <li class:leader={hasLeader && rank === 1}>
+        <span class="rank">{rank}</span>
         <span class="player">
           {player}
-          {#if hasLeader && score === top}
+          {#if hasLeader && rank === 1}
             <Crown size={big ? 18 : 14} />
           {/if}
         </span>

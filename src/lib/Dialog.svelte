@@ -4,17 +4,17 @@
   import Info from '@lucide/svelte/icons/info';
   import { dialog, closeDialog } from './dialog.svelte';
 
-  const icons = { info: Info, error: CircleAlert, yesno: CircleQuestionMark };
+  const icons = { info: Info, error: CircleAlert, question: CircleQuestionMark };
 
-  let primary = $state<HTMLButtonElement>();
+  let box = $state<HTMLDivElement>();
 
+  // Focus the last (primary) button so Enter confirms.
   $effect(() => {
-    if (dialog.current) primary?.focus();
+    if (dialog.current) box?.querySelector<HTMLButtonElement>('.actions button:last-child')?.focus();
   });
 
   function onkeydown(e: KeyboardEvent) {
-    if (!dialog.current) return;
-    if (e.key === 'Escape') closeDialog(false);
+    if (dialog.current && e.key === 'Escape') closeDialog(null);
   }
 </script>
 
@@ -22,10 +22,11 @@
 
 {#if dialog.current}
   {@const d = dialog.current}
-  {@const Icon = icons[d.type]}
-  <div class="backdrop" role="presentation" onclick={() => closeDialog(false)}>
+  {@const Icon = icons[d.tone]}
+  <div class="backdrop" role="presentation" onclick={() => closeDialog(null)}>
     <div
-      class="box {d.type}"
+      bind:this={box}
+      class="box {d.tone}"
       role="alertdialog"
       aria-modal="true"
       aria-labelledby="dialog-title"
@@ -39,12 +40,9 @@
       </div>
       <p>{d.message}</p>
       <div class="actions">
-        {#if d.type === 'yesno'}
-          <button class="ghost" onclick={() => closeDialog(false)}>No</button>
-          <button class="primary" bind:this={primary} onclick={() => closeDialog(true)}>Yes</button>
-        {:else}
-          <button class="primary" bind:this={primary} onclick={() => closeDialog(true)}>OK</button>
-        {/if}
+        {#each d.buttons as b (b.value)}
+          <button class={b.variant ?? 'ghost'} onclick={() => closeDialog(b.value)}>{b.label}</button>
+        {/each}
       </div>
     </div>
   </div>
@@ -58,12 +56,12 @@
     backdrop-filter: blur(3px);
     display: grid;
     place-items: center;
-    z-index: 10;
+    z-index: 20;
     animation: fade 120ms ease-out;
   }
 
   .box {
-    width: min(420px, calc(100vw - 2rem));
+    width: min(440px, calc(100vw - 2rem));
     background: #161c26;
     border: 1px solid var(--border);
     border-top: 3px solid var(--accent);
@@ -113,6 +111,7 @@
 
   .actions {
     display: flex;
+    flex-wrap: wrap;
     justify-content: flex-end;
     gap: 0.5rem;
     margin-top: 1.5rem;

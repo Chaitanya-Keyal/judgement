@@ -118,6 +118,15 @@ button.ghost:hover:not(:disabled) {
   border-color: rgb(255 255 255 / 0.18);
 }
 
+button.danger {
+  background: var(--danger);
+  color: white;
+}
+
+button.danger:hover:not(:disabled) {
+  background: #ff7381;
+}
+
 button.big {
   padding: 1rem 1.4rem;
   font-size: 1.05rem;
