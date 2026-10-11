@@ -14,9 +14,14 @@
   const recent = $derived([...history].reverse());
 
   const date = (iso: string) =>
-    new Date(iso).toLocaleDateString(undefined, { day: 'numeric', month: 'short', year: 'numeric' });
+    new Date(iso).toLocaleDateString(undefined, {
+      day: 'numeric',
+      month: 'short',
+      year: 'numeric',
+    });
   const pct = (v: number) => `${Math.round(v * 100)}%`;
-  const bias = (v: number) => (Math.abs(v) < 0.05 ? 'Spot on' : `${v > 0 ? 'Over' : 'Under'} by ${Math.abs(v).toFixed(1)}`);
+  const bias = (v: number) =>
+    Math.abs(v) < 0.05 ? 'Spot on' : `${v > 0 ? 'Over' : 'Under'} by ${Math.abs(v).toFixed(1)}`;
 
   function download(g: FinishedGame) {
     downloadLog({ fileName: newLogName(new Date(g.finishedAt)), rounds: g.rounds });
@@ -81,13 +86,18 @@
                 <td>{s.games}</td>
                 <td>{s.wins}</td>
                 <td>{pct(s.exactRate)}</td>
-                <td class:over={s.bidBias >= 0.05} class:under={s.bidBias <= -0.05}>{bias(s.bidBias)}</td>
+                <td class:over={s.bidBias >= 0.05} class:under={s.bidBias <= -0.05}
+                  >{bias(s.bidBias)}</td
+                >
               </tr>
             {/each}
           </tbody>
         </table>
       </div>
-      <p class="note">"Calls vs made" is the average gap per round between what a player called and what they made.</p>
+      <p class="note">
+        "Calls vs made" is the average gap per round between what a player called and what they
+        made.
+      </p>
     </div>
 
     <div class="card">
@@ -107,7 +117,12 @@
               </span>
               <span class="game-players">{playersOf(g.rounds).join(', ')}</span>
             </div>
-            <button class="ghost small icon-only" title="Download game log" aria-label="Download game log" onclick={() => download(g)}>
+            <button
+              class="ghost small icon-only"
+              title="Download game log"
+              aria-label="Download game log"
+              onclick={() => download(g)}
+            >
               <Download size={16} />
             </button>
           </li>

@@ -4,7 +4,16 @@
   let { rounds }: { rounds: Rounds } = $props();
 
   // Validated categorical palette (dark mode); colour follows the player, not their rank.
-  const PALETTE = ['#3987e5', '#d95926', '#199e70', '#c98500', '#d55181', '#008300', '#9085e9', '#e66767'];
+  const PALETTE = [
+    '#3987e5',
+    '#d95926',
+    '#199e70',
+    '#c98500',
+    '#d55181',
+    '#008300',
+    '#9085e9',
+    '#e66767',
+  ];
   const OVERFLOW = '#7d8796';
 
   const players = $derived(playersOf(rounds));
@@ -28,7 +37,11 @@
     const mag = 10 ** Math.floor(Math.log10(raw));
     const step = [1, 2, 2.5, 5, 10].map((m) => m * mag).find((s) => s >= raw) ?? raw;
     const ticks = [];
-    for (let v = Math.floor(min / step) * step; v <= Math.ceil(max / step) * step + 1e-9; v += step) {
+    for (
+      let v = Math.floor(min / step) * step;
+      v <= Math.ceil(max / step) * step + 1e-9;
+      v += step
+    ) {
       ticks.push(Math.round(v));
     }
     return ticks;
@@ -42,7 +55,9 @@
     pad.top + ((yMax - v) * (height - pad.top - pad.bottom)) / (yMax - yMin || 1);
 
   const path = (p: string) =>
-    [0, ...series[p]].map((v, i) => `${i ? 'L' : 'M'}${x(i).toFixed(1)},${y(v).toFixed(1)}`).join('');
+    [0, ...series[p]]
+      .map((v, i) => `${i ? 'L' : 'M'}${x(i).toFixed(1)},${y(v).toFixed(1)}`)
+      .join('');
 
   // End labels, nudged apart so they never overlap.
   const labels = $derived.by(() => {
@@ -71,9 +86,7 @@
     return {
       round: played[h - 1],
       left: x(h),
-      rows: players
-        .map((p, i) => ({ p, i, v: series[p][h - 1] }))
-        .sort((a, b) => b.v - a.v),
+      rows: players.map((p, i) => ({ p, i, v: series[p][h - 1] })).sort((a, b) => b.v - a.v),
     };
   });
 </script>
@@ -100,8 +113,17 @@
       onpointerleave={() => (hover = null)}
     >
       {#each ticks as t (t)}
-        <line class="grid" class:zero={t === 0} x1={pad.left} x2={width - right} y1={y(t)} y2={y(t)} />
-        <text class="axis" x={pad.left - 8} y={y(t)} text-anchor="end" dominant-baseline="middle">{t}</text>
+        <line
+          class="grid"
+          class:zero={t === 0}
+          x1={pad.left}
+          x2={width - right}
+          y1={y(t)}
+          y2={y(t)}
+        />
+        <text class="axis" x={pad.left - 8} y={y(t)} text-anchor="end" dominant-baseline="middle"
+          >{t}</text
+        >
       {/each}
 
       {#each played as n, i (n)}
@@ -111,7 +133,13 @@
       {/each}
 
       {#if tooltip}
-        <line class="crosshair" x1={tooltip.left} x2={tooltip.left} y1={pad.top} y2={height - pad.bottom} />
+        <line
+          class="crosshair"
+          x1={tooltip.left}
+          x2={tooltip.left}
+          y1={pad.top}
+          y2={height - pad.bottom}
+        />
       {/if}
 
       {#each players as p, i (p)}
@@ -128,16 +156,31 @@
 
       {#if tooltip}
         {#each tooltip.rows as r (r.p)}
-          <circle cx={tooltip.left} cy={y(r.v)} r="4.5" fill={colour(r.i)} stroke="#151b24" stroke-width="2" />
+          <circle
+            cx={tooltip.left}
+            cy={y(r.v)}
+            r="4.5"
+            fill={colour(r.i)}
+            stroke="#151b24"
+            stroke-width="2"
+          />
         {/each}
       {/if}
 
       {#each labels as l (l.p)}
         <circle cx={width - right + 8} cy={l.y} r="3" fill={colour(l.i)} />
-        <text class="end-label" x={width - right + 15} y={l.y} dominant-baseline="middle">{l.p}</text>
+        <text class="end-label" x={width - right + 15} y={l.y} dominant-baseline="middle"
+          >{l.p}</text
+        >
       {/each}
 
-      <rect x={pad.left} y={pad.top} width={Math.max(0, width - pad.left - right)} height={height - pad.top - pad.bottom} fill="transparent" />
+      <rect
+        x={pad.left}
+        y={pad.top}
+        width={Math.max(0, width - pad.left - right)}
+        height={height - pad.top - pad.bottom}
+        fill="transparent"
+      />
     </svg>
 
     {#if tooltip}

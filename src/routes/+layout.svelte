@@ -27,7 +27,11 @@
   </a>
   <nav>
     {#each links as l (l.href)}
-      <a href={l.href} class:active={page.url.pathname === l.href} aria-current={page.url.pathname === l.href ? 'page' : undefined}>
+      <a
+        href={l.href}
+        class:active={page.url.pathname === l.href}
+        aria-current={page.url.pathname === l.href ? 'page' : undefined}
+      >
         <l.icon size={16} />
         <span>{l.label}</span>
       </a>

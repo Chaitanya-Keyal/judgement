@@ -1,9 +1,9 @@
 # Judgement
 
-Scorekeeper for Judgement, the trick-taking card game. Live at **https://judgment.okaybro.dev**.
+Scorekeeper for Judgement, the card game where you call your hands. Live at **https://judgment.okaybro.dev**.
 
-Web version of the original tkinter desktop app: same rules, scoring and JSON log format,
-so logs from either version load in the other.
+Track each round's calls and hands made at the card table. No accounts, no backend:
+everything stays in your browser, and any game can be downloaded as a JSON log and loaded back later.
 
 ## Features
 

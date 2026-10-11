@@ -18,7 +18,12 @@
   --heading: 'Zilla Slab', Rockwell, Georgia, serif;
 
   color-scheme: dark;
-  font-family: 'Inter Variable', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  font-family:
+    'Inter Variable',
+    system-ui,
+    -apple-system,
+    'Segoe UI',
+    sans-serif;
   color: var(--text);
   background: var(--bg);
   -webkit-font-smoothing: antialiased;
@@ -34,8 +39,7 @@ body {
   background:
     radial-gradient(1200px 600px at 15% -10%, rgb(47 134 255 / 0.16), transparent 60%),
     radial-gradient(900px 500px at 110% 10%, rgb(24 160 120 / 0.1), transparent 60%),
-    radial-gradient(800px 600px at 50% 120%, rgb(120 70 255 / 0.08), transparent 60%),
-    var(--bg);
+    radial-gradient(800px 600px at 50% 120%, rgb(120 70 255 / 0.08), transparent 60%), var(--bg);
   background-attachment: fixed;
 }
 

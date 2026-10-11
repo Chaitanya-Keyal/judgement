@@ -10,7 +10,8 @@
 
   // Focus the last (primary) button so Enter confirms.
   $effect(() => {
-    if (dialog.current) box?.querySelector<HTMLButtonElement>('.actions button:last-child')?.focus();
+    if (dialog.current)
+      box?.querySelector<HTMLButtonElement>('.actions button:last-child')?.focus();
   });
 
   function onkeydown(e: KeyboardEvent) {
@@ -41,7 +42,9 @@
       <p>{d.message}</p>
       <div class="actions">
         {#each d.buttons as b (b.value)}
-          <button class={b.variant ?? 'ghost'} onclick={() => closeDialog(b.value)}>{b.label}</button>
+          <button class={b.variant ?? 'ghost'} onclick={() => closeDialog(b.value)}
+            >{b.label}</button
+          >
         {/each}
       </div>
     </div>

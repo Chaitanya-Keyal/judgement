@@ -2,7 +2,6 @@
   import Ban from '@lucide/svelte/icons/ban';
   import Calculator from '@lucide/svelte/icons/calculator';
   import Layers from '@lucide/svelte/icons/layers';
-  import Lightbulb from '@lucide/svelte/icons/lightbulb';
   import Play from '@lucide/svelte/icons/play';
   import Repeat from '@lucide/svelte/icons/repeat';
   import Smartphone from '@lucide/svelte/icons/smartphone';
@@ -31,7 +30,7 @@
   <title>How to Play Judgement | Rules and Scoring</title>
   <meta
     name="description"
-    content="Rules of Judgement, the trick-taking card game: dealing, calling your hands, the dealer's restriction, trumps, and how scoring works."
+    content="Rules of Judgement, the card game where you call your hands: dealing, calling your hands, the dealer's restriction, trumps, and how scoring works."
   />
 </svelte:head>
 
@@ -44,7 +43,7 @@
     </div>
     <h1>How to Play Judgement</h1>
     <p class="lede">
-      A trick-taking card game where the goal isn't to win the most tricks. It's to win
+      A card game where the goal isn't to win the most hands. It's to win
       <em>exactly</em> as many as you said you would.
     </p>
   </header>
@@ -61,9 +60,9 @@
   <section class="card">
     <h2><span class="icon"><Layers size={18} /></span>Rounds and dealing</h2>
     <p>
-      The first round deals as many cards to each player as the deck allows: 52 divided by the number of
-      players, rounded down. Each round after that deals one card fewer, down to a final round of one card each.
-      The game has that many rounds in total.
+      The first round deals as many cards to each player as the deck allows: 52 divided by the
+      number of players, rounded down. Each round after that deals one card fewer, down to a final
+      round of one card each. The game has that many rounds in total.
     </p>
     <div class="table-wrap">
       <table class="compact">
@@ -82,8 +81,8 @@
       </table>
     </div>
     <p>
-      The deal passes one seat to the left every round. A round is named after how many cards each player
-      holds, so a game counts down: "Round of 8", "Round of 7", and so on.
+      The deal passes one seat to the left every round. A round is named after how many cards each
+      player holds, so a game counts down: "Round of 8", "Round of 7", and so on.
     </p>
   </section>
 
@@ -105,8 +104,8 @@
   <section class="card">
     <h2><span class="icon"><Target size={18} /></span>Calling your hands</h2>
     <p>
-      After the deal, every player looks at their cards and calls their <strong>judgement</strong>: exactly how many
-      tricks ("hands") they expect to win this round. Zero is a perfectly good call.
+      After the deal, every player looks at their cards and calls their <strong>judgement</strong>:
+      exactly how many hands they expect to win this round. Zero is a perfectly good call.
     </p>
     <p>
       Calling starts with the player to the dealer's left and goes around the table, so the
@@ -117,22 +116,28 @@
       <div>
         <strong>The dealer's restriction</strong>
         <p>
-          The total of all calls can never equal the number of cards in the round. That means at least one player is
-          bound to miss. Because the dealer calls last, they're the one who may be blocked from a particular number.
-          For example, in a Round of 5 where the others have called 1, 0 and 2, the dealer cannot call 2.
+          The total of all calls can never equal the number of cards in the round. That means at
+          least one player is bound to miss. Because the dealer calls last, they're the one who may
+          be blocked from a particular number. For example, in a Round of 5 where the others have
+          called 1, 0 and 2, the dealer cannot call 2.
         </p>
       </div>
     </div>
   </section>
 
   <section class="card">
-    <h2><span class="icon"><Play size={18} /></span>Playing the tricks</h2>
+    <h2><span class="icon"><Play size={18} /></span>Playing the hands</h2>
     <ul>
-      <li>The player to the dealer's left leads the first trick.</li>
+      <li>
+        Each hand is one card from every player. The player to the dealer's left leads the first.
+      </li>
       <li>Everyone must follow the suit that was led if they can.</li>
       <li>If you can't follow suit, you may play any card, including a trump.</li>
-      <li>The highest trump wins the trick. If no trump was played, the highest card of the led suit wins.</li>
-      <li>Whoever wins a trick leads the next one, until all cards are played.</li>
+      <li>
+        The highest trump wins the hand. If no trump was played, the highest card of the led suit
+        wins.
+      </li>
+      <li>Whoever wins a hand leads the next one, until all cards are played.</li>
     </ul>
   </section>
 
@@ -178,26 +183,19 @@
   </section>
 
   <section class="card">
-    <h2><span class="icon"><Lightbulb size={18} /></span>Tips</h2>
-    <ul>
-      <li>Aces and high trumps are near-certain tricks. Count them first.</li>
-      <li>In small rounds a call of zero is often the safest 10 points on the table.</li>
-      <li>Watch the running total of calls. If the table is over-called, tricks will be scarce.</li>
-      <li>Once you've made your call, try to dump high cards so you don't win extra tricks.</li>
-    </ul>
-  </section>
-
-  <section class="card">
     <h2><span class="icon"><Smartphone size={18} /></span>Using this app</h2>
     <ol class="steps">
       <li>Enter the players and pick who deals first.</li>
       <li>Each round, type everyone's calls. The app shows the number the dealer can't call.</li>
       <li>After the cards are played, enter the hands each player made. Blank counts as 0.</li>
-      <li>Scores update instantly. Use the scoresheet's pencil button to fix a mistake in any past round.</li>
+      <li>
+        Scores update instantly. Use the scoresheet's pencil button to fix a mistake in any past
+        round.
+      </li>
     </ol>
     <p>
-      Your game saves in this browser as you go, so a refresh or a closed tab never loses it. Finished games feed
-      the <a href={resolve('/stats')}>stats page</a>.
+      Your game saves in this browser as you go, so a refresh or a closed tab never loses it.
+      Finished games feed the <a href={resolve('/stats')}>stats page</a>.
     </p>
     <a class="cta" href={resolve('/')}><Play size={18} fill="currentColor" /> Start a game</a>
   </section>

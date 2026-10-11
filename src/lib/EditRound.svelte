@@ -25,7 +25,8 @@
     oncancel: () => void;
   } = $props();
 
-  // svelte-ignore state_referenced_locally -- the dialog is recreated for each round edited
+  // Read once on purpose: the dialog is recreated for each round edited.
+  // svelte-ignore state_referenced_locally
   const info = round(rounds, n);
   // svelte-ignore state_referenced_locally
   const order = turnOrder(playersOf(rounds), info.dealer);
@@ -65,52 +66,54 @@
     onclick={(e) => e.stopPropagation()}
     onkeydown={(e) => e.stopPropagation()}
   >
-  <form onsubmit={save} {@attach focusFirst}>
-    <div class="head">
-      <span class="icon"><Pencil size={18} /></span>
-      <div>
-        <h2 id="edit-title">Edit Round of {n}</h2>
-        <p class="meta">
-          <span class="suit {info.suit.toLowerCase()}"><SuitIcon suit={info.suit} size={13} /></span>
-          {info.suit}, dealt by {info.dealer}
-        </p>
+    <form onsubmit={save} {@attach focusFirst}>
+      <div class="head">
+        <span class="icon"><Pencil size={18} /></span>
+        <div>
+          <h2 id="edit-title">Edit Round of {n}</h2>
+          <p class="meta">
+            <span class="suit {info.suit.toLowerCase()}"
+              ><SuitIcon suit={info.suit} size={13} /></span
+            >
+            {info.suit}, dealt by {info.dealer}
+          </p>
+        </div>
       </div>
-    </div>
 
-    <div class="grid">
-      <span></span>
-      <span class="col">Called</span>
-      <span class="col">Made</span>
-      {#each order as p (p)}
-        <span class="name">{p}</span>
-        <input
-          type="text"
-          inputmode="numeric"
-          autocomplete="off"
-          aria-label="{p} called"
-          value={judgements[p]}
-          oninput={digitsOnly(judgements, p, n)}
-        />
-        <input
-          type="text"
-          inputmode="numeric"
-          autocomplete="off"
-          aria-label="{p} made"
-          value={hands[p]}
-          oninput={digitsOnly(hands, p, n)}
-        />
-      {/each}
-    </div>
+      <div class="grid">
+        <span></span>
+        <span class="col">Called</span>
+        <span class="col">Made</span>
+        {#each order as p (p)}
+          <span class="name">{p}</span>
+          <input
+            type="text"
+            inputmode="numeric"
+            autocomplete="off"
+            aria-label="{p} called"
+            value={judgements[p]}
+            oninput={digitsOnly(judgements, p, n)}
+          />
+          <input
+            type="text"
+            inputmode="numeric"
+            autocomplete="off"
+            aria-label="{p} made"
+            value={hands[p]}
+            oninput={digitsOnly(hands, p, n)}
+          />
+        {/each}
+      </div>
 
-    {#if error}
-      <p class="error"><CircleAlert size={16} /> {error}</p>
-    {/if}
+      {#if error}
+        <p class="error"><CircleAlert size={16} /> {error}</p>
+      {/if}
 
-    <div class="actions">
-      <button type="button" class="ghost" onclick={oncancel}>Cancel</button>
-      <button type="submit" class="primary">Save</button>
-    </div>
-  </form>
+      <div class="actions">
+        <button type="button" class="ghost" onclick={oncancel}>Cancel</button>
+        <button type="submit" class="primary">Save</button>
+      </div>
+    </form>
   </div>
 </div>
 

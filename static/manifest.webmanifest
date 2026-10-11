@@ -1,7 +1,7 @@
 {
   "name": "Judgement",
   "short_name": "Judgement",
-  "description": "Scorekeeper for Judgement, the trick-taking card game.",
+  "description": "Scorekeeper for Judgement, the card game where you call your hands.",
   "start_url": "/",
   "scope": "/",
   "display": "standalone",

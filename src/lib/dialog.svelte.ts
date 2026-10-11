@@ -1,4 +1,4 @@
-// Promise-based replacement for the desktop app's tkinter message boxes.
+// Promise-based modal dialogs: info, error, yes/no, or custom buttons.
 
 export type DialogType = 'info' | 'error' | 'yesno';
 

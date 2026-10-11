@@ -1,5 +1,5 @@
-// Game data uses the exact same shape as the desktop app's JSON logs,
-// so logs saved from either version can be loaded by the other.
+// The saved game doubles as the downloadable JSON log. Keep its shape stable so that
+// previously downloaded logs always load.
 
 export type Suit = 'Spades' | 'Hearts' | 'Clubs' | 'Diamonds';
 
@@ -44,6 +44,7 @@ export interface FinishedGame {
 }
 
 const SUITS: Suit[] = ['Spades', 'Hearts', 'Clubs', 'Diamonds'];
+// Stored in each round of the log format; the UI renders suits with icons instead.
 const SUIT_ICONS = ['♠', '♥', '♣', '♦'];
 const META_KEYS = ['suit', 'suit_icon', 'dealer'];
 const STORAGE_KEY = 'judgement:current';
@@ -53,9 +54,7 @@ const HISTORY_KEY = 'judgement:history';
 const clone = <T>(v: T): T => JSON.parse(JSON.stringify(v));
 
 export function titleCase(name: string): string {
-  return name
-    .trim()
-    .replace(/\p{L}+/gu, (w) => w[0].toUpperCase() + w.slice(1).toLowerCase());
+  return name.trim().replace(/\p{L}+/gu, (w) => w[0].toUpperCase() + w.slice(1).toLowerCase());
 }
 
 export function round(rounds: Rounds, n: number): RoundInfo {
@@ -246,10 +245,6 @@ export function loadCurrent(): SavedGame | null {
   } catch {
     return null;
   }
-}
-
-export function clearCurrent() {
-  localStorage.removeItem(STORAGE_KEY);
 }
 
 export function loadHistory(): FinishedGame[] {

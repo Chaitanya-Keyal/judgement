@@ -83,7 +83,8 @@
   const order = $derived(game && info ? turnOrder(playersOf(game.rounds), info.dealer) : []);
   const inProgress = $derived(saved && currentRound(saved.rounds) > 0 ? saved : null);
 
-  const sum = (r: Record<string, string>, ps = order) => ps.reduce((s, p) => s + Number(r[p] || 0), 0);
+  const sum = (r: Record<string, string>, ps = order) =>
+    ps.reduce((s, p) => s + Number(r[p] || 0), 0);
   const calledSum = $derived(sum(judgementInputs));
   const madeSum = $derived(sum(handsInputs));
 
@@ -199,7 +200,11 @@
 
   function setupRounds(e: SubmitEvent) {
     e.preventDefault();
-    persist({ id: newId(), fileName: newLogName(), rounds: createRounds(ui.players, ui.firstDealer) });
+    persist({
+      id: newId(),
+      fileName: newLogName(),
+      rounds: createRounds(ui.players, ui.firstDealer),
+    });
     enterGame();
   }
 
@@ -211,7 +216,10 @@
       showMessage('Invalid Judgement', 'Enter a valid judgement for all players', 'error');
       return;
     }
-    const error = judgementError(curr, order.map((p) => Number(judgementInputs[p])));
+    const error = judgementError(
+      curr,
+      order.map((p) => Number(judgementInputs[p])),
+    );
     if (error) {
       showMessage('Invalid Judgement', error, 'error');
       return;
@@ -223,14 +231,20 @@
     e.preventDefault();
     if (!game) return;
     for (const p of order) if (!handsInputs[p]) handsInputs[p] = '0';
-    const error = handsError(curr, order.map((p) => Number(handsInputs[p])));
+    const error = handsError(
+      curr,
+      order.map((p) => Number(handsInputs[p])),
+    );
     if (error) {
       showMessage('Invalid Hands', error, 'error');
       return;
     }
     const toNums = (r: Record<string, string>) =>
       Object.fromEntries(order.map((p) => [p, Number(r[p])]));
-    persist({ ...game, rounds: setRound(game.rounds, curr, toNums(judgementInputs), toNums(handsInputs)) });
+    persist({
+      ...game,
+      rounds: setRound(game.rounds, curr, toNums(judgementInputs), toNums(handsInputs)),
+    });
     enterGame();
     if (currentRound(game.rounds) === 0) {
       history = recordFinished(game);
@@ -259,12 +273,18 @@
 </script>
 
 <svelte:head>
-  <title>{game && info ? `Round of ${curr} | Judgement` : 'Judgement | Card Game Scorekeeper'}</title>
+  <title
+    >{game && info ? `Round of ${curr} | Judgement` : 'Judgement | Card Game Scorekeeper'}</title
+  >
 </svelte:head>
 
-  {#snippet toolbar()}
+{#snippet toolbar()}
   <div class="toolbar">
-    <button class="ghost small" onclick={() => (ui.screen = 'home')} title="Back to the menu (your game stays saved)">
+    <button
+      class="ghost small"
+      onclick={() => (ui.screen = 'home')}
+      title="Back to the menu (your game stays saved)"
+    >
       <House size={16} /> Menu
     </button>
     <button class="ghost small" onclick={() => game && downloadLog(game)} title="Download game log">
@@ -274,239 +294,255 @@
 {/snippet}
 
 {#if ui.screen === 'home'}
-    <section class="home">
-      <div class="suits">
-        {#each SUITS as s (s)}
-          <span class="suit {s.toLowerCase()}"><SuitIcon suit={s} size={26} /></span>
-        {/each}
-      </div>
-      <h1>Judgement</h1>
-      <p class="tagline">Call your hands. Make your hands.</p>
-      <div class="stack">
-        {#if inProgress}
-          <button class="primary big resume" onclick={resume}>
-            <span class="resume-title"><Play size={18} fill="currentColor" /> Resume Game</span>
-            <span class="resume-meta">
-              <span><Layers size={13} /> Round of {currentRound(inProgress.rounds)}</span>
-              <span><Users size={13} /> {playersOf(inProgress.rounds).length} players</span>
-            </span>
-          </button>
-        {/if}
-        <button class="big {inProgress ? 'ghost' : 'primary'}" onclick={() => newGame()}>
-          <Plus size={18} /> New Game
-        </button>
-        <button class="ghost big" onclick={chooseSavedGame}>
-          <FolderOpen size={18} /> Load Saved Game
-        </button>
-      </div>
-      <div class="links">
-        <a href={resolve('/rules')}><BookOpen size={16} /> How to play</a>
-        {#if history.length}
-          <a href={resolve('/stats')}><ChartColumn size={16} /> Stats from {history.length} {history.length === 1 ? 'game' : 'games'}</a>
-        {/if}
-      </div>
-      <input
-        bind:this={fileInput}
-        type="file"
-        accept=".json,application/json"
-        hidden
-        onchange={loadSavedGame}
-      />
-    </section>
-  {:else if ui.screen === 'players'}
-    <form class="card setup" onsubmit={chooseFirstDealer} {@attach focusFirst}>
-      <div class="setup-head">
-        <span class="step">Step 1 of 2</span>
-        <h2>Enter Player Names</h2>
-      </div>
-      <div class="names">
-        {#each ui.names as _, i (i)}
-          <div class="name-field">
-            <span class="idx">{i + 1}</span>
-            <input
-              type="text"
-              placeholder="Player {i + 1}"
-              maxlength="20"
-              autocomplete="off"
-              bind:value={ui.names[i]}
-            />
-          </div>
-        {/each}
-      </div>
-      <div class="nav">
-        <button type="button" class="ghost" onclick={() => (ui.screen = 'home')}>
-          <ArrowLeft size={18} /> Back
-        </button>
-        <button type="submit" class="primary">Next <ArrowRight size={18} /></button>
-      </div>
-    </form>
-  {:else if ui.screen === 'dealer'}
-    <form class="card setup" onsubmit={setupRounds}>
-      <div class="setup-head">
-        <span class="step">Step 2 of 2</span>
-        <h2>Choose the First Dealer</h2>
-      </div>
-      <div class="dealers">
-        {#each ui.players as p (p)}
-          <label class="choice" class:selected={ui.firstDealer === p}>
-            <input type="radio" name="dealer" value={p} bind:group={ui.firstDealer} />
-            <span class="avatar">{p[0]}</span>
-            <span class="choice-name">{p}</span>
-          </label>
-        {/each}
-      </div>
-      <div class="nav">
-        <button type="button" class="ghost" onclick={() => (ui.screen = 'players')}>
-          <ArrowLeft size={18} /> Back
-        </button>
-        <button type="submit" class="primary" disabled={!ui.firstDealer}>
-          Start <ArrowRight size={18} />
-        </button>
-      </div>
-    </form>
-  {:else if game && info}
-  {@render toolbar()}
-    <div class="game">
-      <div class="area-board"><ScoreBoard rounds={game.rounds} /></div>
-
-      <section class="area-entry">
-        <div class="round-head">
-          <h1>Round of {curr}</h1>
-          <div class="progress" aria-hidden="true">
-            <span style:width="{((total - curr) / total) * 100}%"></span>
-          </div>
-        </div>
-        {#key `${curr}-${phase}`}
-          {#if phase === 'judgement'}
-            <form class="card entry" onsubmit={submitJudgement} {@attach focusFirst}>
-              <h2>Enter the Judgements</h2>
-              {#each order as p (p)}
-                {@const isDealer = p === info.dealer}
-                <label class="row">
-                  <span class="name">
-                    {p}
-                    {#if isDealer}<span class="badge">Dealer</span>{/if}
-                  </span>
-                  {#if isDealer && forbidden !== null}
-                    <span class="hint" class:clash={judgementInputs[p] === String(forbidden)}>
-                      <Ban size={13} /> not {forbidden}
-                    </span>
-                  {/if}
-                  <input
-                    type="text"
-                    inputmode="numeric"
-                    autocomplete="off"
-                    class:clash={isDealer && forbidden !== null && judgementInputs[p] === String(forbidden)}
-                    value={judgementInputs[p] ?? ''}
-                    oninput={digitsOnly(judgementInputs, p, curr)}
-                  />
-                </label>
-              {/each}
-              <p class="tally" class:bad={calledSum === curr}>
-                Called <strong>{calledSum}</strong> of {curr}
-              </p>
-              <button type="submit" class="primary wide"><Check size={18} /> Submit</button>
-            </form>
-          {:else}
-            <form class="card entry" onsubmit={submitHands} {@attach focusFirst}>
-              <h2>Enter the Hands Made</h2>
-              {#each order as p (p)}
-                <label class="row">
-                  <span class="name">
-                    {p}
-                    <span class="called" title="Judgement"><Target size={13} /> {judgementInputs[p]}</span>
-                  </span>
-                  <input
-                    type="text"
-                    inputmode="numeric"
-                    autocomplete="off"
-                    placeholder="0"
-                    value={handsInputs[p] ?? ''}
-                    oninput={digitsOnly(handsInputs, p, curr)}
-                  />
-                </label>
-              {/each}
-              <p class="tally" class:good={madeSum === curr}>
-                Made <strong>{madeSum}</strong> of {curr}
-              </p>
-              <div class="form-actions">
-                <button type="button" class="ghost" onclick={() => (phase = 'judgement')}>
-                  <ArrowLeft size={18} /> Calls
-                </button>
-                <button type="submit" class="primary grow"><Check size={18} /> Submit</button>
-              </div>
-            </form>
-          {/if}
-        {/key}
-      </section>
-
-      <aside class="area-trump card">
-        <h2>Trump</h2>
-        <div class="playing-card {info.suit.toLowerCase()}">
-          <span class="corner"><SuitIcon suit={info.suit} size={16} /></span>
-          <img src="/suits/{info.suit}.png" alt={info.suit} />
-          <span class="corner flip"><SuitIcon suit={info.suit} size={16} /></span>
-        </div>
-        <p class="suit-name">{info.suit}</p>
-        <p class="dealer">Dealer <strong>{info.dealer}</strong></p>
-      </aside>
-
-      <section class="area-lower card">
-        <div class="tabs" role="tablist">
-          <button role="tab" aria-selected={lowerTab === 'sheet'} class:active={lowerTab === 'sheet'} onclick={() => (lowerTab = 'sheet')}>
-            <Table size={16} /> Scoresheet
-          </button>
-          <button role="tab" aria-selected={lowerTab === 'chart'} class:active={lowerTab === 'chart'} onclick={() => (lowerTab = 'chart')}>
-            <ChartLine size={16} /> Chart
-          </button>
-        </div>
-        {#if lowerTab === 'sheet'}
-          <Scoresheet rounds={game.rounds} onedit={(n) => (editing = n)} />
-        {:else}
-          <ScoreChart rounds={game.rounds} />
-        {/if}
-      </section>
+  <section class="home">
+    <div class="suits">
+      {#each SUITS as s (s)}
+        <span class="suit {s.toLowerCase()}"><SuitIcon suit={s} size={26} /></span>
+      {/each}
     </div>
-  {:else if game}
-    {@const won = winners(game.rounds)}
+    <h1>Judgement</h1>
+    <p class="tagline">Call your hands. Make your hands.</p>
+    <div class="stack">
+      {#if inProgress}
+        <button class="primary big resume" onclick={resume}>
+          <span class="resume-title"><Play size={18} fill="currentColor" /> Resume Game</span>
+          <span class="resume-meta">
+            <span><Layers size={13} /> Round of {currentRound(inProgress.rounds)}</span>
+            <span><Users size={13} /> {playersOf(inProgress.rounds).length} players</span>
+          </span>
+        </button>
+      {/if}
+      <button class="big {inProgress ? 'ghost' : 'primary'}" onclick={() => newGame()}>
+        <Plus size={18} /> New Game
+      </button>
+      <button class="ghost big" onclick={chooseSavedGame}>
+        <FolderOpen size={18} /> Load Saved Game
+      </button>
+    </div>
+    <div class="links">
+      <a href={resolve('/rules')}><BookOpen size={16} /> How to play</a>
+      {#if history.length}
+        <a href={resolve('/stats')}
+          ><ChartColumn size={16} /> Stats from {history.length}
+          {history.length === 1 ? 'game' : 'games'}</a
+        >
+      {/if}
+    </div>
+    <input
+      bind:this={fileInput}
+      type="file"
+      accept=".json,application/json"
+      hidden
+      onchange={loadSavedGame}
+    />
+  </section>
+{:else if ui.screen === 'players'}
+  <form class="card setup" onsubmit={chooseFirstDealer} {@attach focusFirst}>
+    <div class="setup-head">
+      <span class="step">Step 1 of 2</span>
+      <h2>Enter Player Names</h2>
+    </div>
+    <div class="names">
+      {#each ui.names as _, i (i)}
+        <div class="name-field">
+          <span class="idx">{i + 1}</span>
+          <input
+            type="text"
+            placeholder="Player {i + 1}"
+            maxlength="20"
+            autocomplete="off"
+            bind:value={ui.names[i]}
+          />
+        </div>
+      {/each}
+    </div>
+    <div class="nav">
+      <button type="button" class="ghost" onclick={() => (ui.screen = 'home')}>
+        <ArrowLeft size={18} /> Back
+      </button>
+      <button type="submit" class="primary">Next <ArrowRight size={18} /></button>
+    </div>
+  </form>
+{:else if ui.screen === 'dealer'}
+  <form class="card setup" onsubmit={setupRounds}>
+    <div class="setup-head">
+      <span class="step">Step 2 of 2</span>
+      <h2>Choose the First Dealer</h2>
+    </div>
+    <div class="dealers">
+      {#each ui.players as p (p)}
+        <label class="choice" class:selected={ui.firstDealer === p}>
+          <input type="radio" name="dealer" value={p} bind:group={ui.firstDealer} />
+          <span class="avatar">{p[0]}</span>
+          <span class="choice-name">{p}</span>
+        </label>
+      {/each}
+    </div>
+    <div class="nav">
+      <button type="button" class="ghost" onclick={() => (ui.screen = 'players')}>
+        <ArrowLeft size={18} /> Back
+      </button>
+      <button type="submit" class="primary" disabled={!ui.firstDealer}>
+        Start <ArrowRight size={18} />
+      </button>
+    </div>
+  </form>
+{:else if game && info}
   {@render toolbar()}
-    <section class="over">
-      <div class="winner">
-        <span class="trophy"><Trophy size={30} /></span>
-        {#if won.length === 1}
-          <h1>{won[0]} wins!</h1>
+  <div class="game">
+    <div class="area-board"><ScoreBoard rounds={game.rounds} /></div>
+
+    <section class="area-entry">
+      <div class="round-head">
+        <h1>Round of {curr}</h1>
+        <div class="progress" aria-hidden="true">
+          <span style:width="{((total - curr) / total) * 100}%"></span>
+        </div>
+      </div>
+      {#key `${curr}-${phase}`}
+        {#if phase === 'judgement'}
+          <form class="card entry" onsubmit={submitJudgement} {@attach focusFirst}>
+            <h2>Enter the Judgements</h2>
+            {#each order as p (p)}
+              {@const isDealer = p === info.dealer}
+              <label class="row">
+                <span class="name">
+                  {p}
+                  {#if isDealer}<span class="badge">Dealer</span>{/if}
+                </span>
+                {#if isDealer && forbidden !== null}
+                  <span class="hint" class:clash={judgementInputs[p] === String(forbidden)}>
+                    <Ban size={13} /> not {forbidden}
+                  </span>
+                {/if}
+                <input
+                  type="text"
+                  inputmode="numeric"
+                  autocomplete="off"
+                  class:clash={isDealer &&
+                    forbidden !== null &&
+                    judgementInputs[p] === String(forbidden)}
+                  value={judgementInputs[p] ?? ''}
+                  oninput={digitsOnly(judgementInputs, p, curr)}
+                />
+              </label>
+            {/each}
+            <p class="tally" class:bad={calledSum === curr}>
+              Called <strong>{calledSum}</strong> of {curr}
+            </p>
+            <button type="submit" class="primary wide"><Check size={18} /> Submit</button>
+          </form>
         {:else}
-          <h1>It's a tie!</h1>
-          <p>{won.join(' and ')} share the top spot.</p>
+          <form class="card entry" onsubmit={submitHands} {@attach focusFirst}>
+            <h2>Enter the Hands Made</h2>
+            {#each order as p (p)}
+              <label class="row">
+                <span class="name">
+                  {p}
+                  <span class="called" title="Judgement"
+                    ><Target size={13} /> {judgementInputs[p]}</span
+                  >
+                </span>
+                <input
+                  type="text"
+                  inputmode="numeric"
+                  autocomplete="off"
+                  placeholder="0"
+                  value={handsInputs[p] ?? ''}
+                  oninput={digitsOnly(handsInputs, p, curr)}
+                />
+              </label>
+            {/each}
+            <p class="tally" class:good={madeSum === curr}>
+              Made <strong>{madeSum}</strong> of {curr}
+            </p>
+            <div class="form-actions">
+              <button type="button" class="ghost" onclick={() => (phase = 'judgement')}>
+                <ArrowLeft size={18} /> Calls
+              </button>
+              <button type="submit" class="primary grow"><Check size={18} /> Submit</button>
+            </div>
+          </form>
         {/if}
-      </div>
-
-      <div class="over-actions">
-        <button class="primary big" onclick={playAgain}><RotateCcw size={18} /> Play Again</button>
-        <button class="ghost big" onclick={() => game && newGame(playersOf(game.rounds))}>
-          <Users size={18} /> New Players
-        </button>
-        <button class="ghost big" onclick={() => game && downloadLog(game)}>
-          <Download size={18} /> Download Log
-        </button>
-      </div>
-
-      <div class="over-grid">
-        <ScoreBoard rounds={game.rounds} />
-        <div class="card"><ScoreChart rounds={game.rounds} /></div>
-      </div>
-
-      <div class="card sheet-card">
-        <h2>Scoresheet</h2>
-        <Scoresheet rounds={game.rounds} onedit={(n) => (editing = n)} />
-      </div>
+      {/key}
     </section>
-  {/if}
+
+    <aside class="area-trump card">
+      <h2>Trump</h2>
+      <div class="playing-card {info.suit.toLowerCase()}">
+        <span class="corner"><SuitIcon suit={info.suit} size={16} /></span>
+        <img src="/suits/{info.suit}.png" alt={info.suit} />
+        <span class="corner flip"><SuitIcon suit={info.suit} size={16} /></span>
+      </div>
+      <p class="suit-name">{info.suit}</p>
+      <p class="dealer">Dealer <strong>{info.dealer}</strong></p>
+    </aside>
+
+    <section class="area-lower card">
+      <div class="tabs" role="tablist">
+        <button
+          role="tab"
+          aria-selected={lowerTab === 'sheet'}
+          class:active={lowerTab === 'sheet'}
+          onclick={() => (lowerTab = 'sheet')}
+        >
+          <Table size={16} /> Scoresheet
+        </button>
+        <button
+          role="tab"
+          aria-selected={lowerTab === 'chart'}
+          class:active={lowerTab === 'chart'}
+          onclick={() => (lowerTab = 'chart')}
+        >
+          <ChartLine size={16} /> Chart
+        </button>
+      </div>
+      {#if lowerTab === 'sheet'}
+        <Scoresheet rounds={game.rounds} onedit={(n) => (editing = n)} />
+      {:else}
+        <ScoreChart rounds={game.rounds} />
+      {/if}
+    </section>
+  </div>
+{:else if game}
+  {@const won = winners(game.rounds)}
+  {@render toolbar()}
+  <section class="over">
+    <div class="winner">
+      <span class="trophy"><Trophy size={30} /></span>
+      {#if won.length === 1}
+        <h1>{won[0]} wins!</h1>
+      {:else}
+        <h1>It's a tie!</h1>
+        <p>{won.join(' and ')} share the top spot.</p>
+      {/if}
+    </div>
+
+    <div class="over-actions">
+      <button class="primary big" onclick={playAgain}><RotateCcw size={18} /> Play Again</button>
+      <button class="ghost big" onclick={() => game && newGame(playersOf(game.rounds))}>
+        <Users size={18} /> New Players
+      </button>
+      <button class="ghost big" onclick={() => game && downloadLog(game)}>
+        <Download size={18} /> Download Log
+      </button>
+    </div>
+
+    <div class="over-grid">
+      <ScoreBoard rounds={game.rounds} />
+      <div class="card"><ScoreChart rounds={game.rounds} /></div>
+    </div>
+
+    <div class="card sheet-card">
+      <h2>Scoresheet</h2>
+      <Scoresheet rounds={game.rounds} onedit={(n) => (editing = n)} />
+    </div>
+  </section>
+{/if}
 
 {#if game && editing !== null}
   <EditRound rounds={game.rounds} n={editing} onsave={saveEdit} oncancel={() => (editing = null)} />
 {/if}
-
 
 <style>
   .toolbar {
@@ -1130,6 +1166,5 @@
     .names {
       grid-template-columns: 1fr;
     }
-
   }
 </style>

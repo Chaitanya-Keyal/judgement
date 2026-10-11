@@ -1,20 +1,15 @@
 <script lang="ts">
   import Pencil from '@lucide/svelte/icons/pencil';
-  import {
-    currentRound,
-    playerRound,
-    playersOf,
-    round,
-    totalRounds,
-    type Rounds,
-  } from './game';
+  import { currentRound, playerRound, playersOf, round, totalRounds, type Rounds } from './game';
   import SuitIcon from './SuitIcon.svelte';
 
   let { rounds, onedit }: { rounds: Rounds; onedit: (n: number) => void } = $props();
 
   const players = $derived(playersOf(rounds));
   const curr = $derived(currentRound(rounds));
-  const all = $derived(Array.from({ length: totalRounds(rounds) }, (_, i) => totalRounds(rounds) - i));
+  const all = $derived(
+    Array.from({ length: totalRounds(rounds) }, (_, i) => totalRounds(rounds) - i),
+  );
 </script>
 
 <div class="wrap">
@@ -37,7 +32,12 @@
               </span>
               <span class="n">{n}</span>
               {#if played}
-                <button class="edit" title="Edit round of {n}" aria-label="Edit round of {n}" onclick={() => onedit(n)}>
+                <button
+                  class="edit"
+                  title="Edit round of {n}"
+                  aria-label="Edit round of {n}"
+                  onclick={() => onedit(n)}
+                >
                   <Pencil size={13} />
                 </button>
               {/if}
@@ -47,7 +47,9 @@
             {@const pr = playerRound(rounds, n, p)}
             <td class:dealer={info.dealer === p}>
               {#if played}
-                <span class="score" class:neg={pr.score < 0} class:hit={pr.judgement === pr.hands}>{pr.score}</span>
+                <span class="score" class:neg={pr.score < 0} class:hit={pr.judgement === pr.hands}
+                  >{pr.score}</span
+                >
                 <span class="bid">{pr.judgement}/{pr.hands}</span>
               {:else if info.dealer === p}
                 <span class="deals">deals</span>
@@ -67,7 +69,10 @@
     </tfoot>
   </table>
 </div>
-<p class="legend">Each cell shows the round score, then called / made. Shaded cells mark the dealer. Tap the pencil to fix a round.</p>
+<p class="legend">
+  Each cell shows the round score, then called / made. Shaded cells mark the dealer. Tap the pencil
+  to fix a round.
+</p>
 
 <style>
   .wrap {

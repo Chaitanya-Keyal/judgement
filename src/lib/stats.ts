@@ -11,7 +11,7 @@ export interface PlayerStats {
   bidBias: number;
 }
 
-export interface Record_ {
+export interface Highlight {
   player: string;
   value: number;
   finishedAt: string;
@@ -20,22 +20,29 @@ export interface Record_ {
 export interface Stats {
   games: number;
   players: PlayerStats[];
-  bestRound: Record_ | null;
-  bestGame: Record_ | null;
-  biggestMiss: Record_ | null;
+  bestRound: Highlight | null;
+  bestGame: Highlight | null;
+  biggestMiss: Highlight | null;
 }
 
 export function computeStats(history: FinishedGame[]): Stats {
   const byPlayer = new Map<string, PlayerStats & { exact: number; bias: number }>();
-  let bestRound: Record_ | null = null;
-  let bestGame: Record_ | null = null;
-  let biggestMiss: Record_ | null = null;
+  let bestRound: Highlight | null = null;
+  let bestGame: Highlight | null = null;
+  let biggestMiss: Highlight | null = null;
 
   for (const g of history) {
     const won = winners(g.rounds);
     for (const p of playersOf(g.rounds)) {
       const s = byPlayer.get(p) ?? {
-        player: p, games: 0, wins: 0, rounds: 0, exact: 0, bias: 0, exactRate: 0, bidBias: 0,
+        player: p,
+        games: 0,
+        wins: 0,
+        rounds: 0,
+        exact: 0,
+        bias: 0,
+        exactRate: 0,
+        bidBias: 0,
       };
       s.games++;
       if (won.includes(p)) s.wins++;
