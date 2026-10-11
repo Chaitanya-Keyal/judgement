@@ -309,14 +309,25 @@
       class="ghost small"
       onclick={() => (ui.screen = 'home')}
       title="Back to the menu (your game stays saved)"
+      aria-label="Menu"
     >
-      <House size={16} /> Menu
+      <House size={16} /> <span class="label">Menu</span>
     </button>
-    <button class="ghost small" onclick={() => game && downloadLog(game)} title="Download game log">
-      <Download size={16} /> Download log
+    <button
+      class="ghost small"
+      onclick={() => game && downloadLog(game)}
+      title="Download game log"
+      aria-label="Download log"
+    >
+      <Download size={16} /> <span class="label">Download log</span>
     </button>
-    <button class="ghost small discard" onclick={discardGame} title="Delete this game">
-      <Trash2 size={16} /> Discard
+    <button
+      class="ghost small discard"
+      onclick={discardGame}
+      title="Delete this game"
+      aria-label="Discard"
+    >
+      <Trash2 size={16} /> <span class="label">Discard</span>
     </button>
   </div>
 {/snippet}
@@ -439,15 +450,17 @@
             {#each order as p (p)}
               {@const isDealer = p === info.dealer}
               <label class="row">
-                <span class="name">
-                  {p}
-                  {#if isDealer}<span class="badge">Dealer</span>{/if}
-                </span>
-                {#if isDealer && forbidden !== null}
-                  <span class="hint" class:clash={judgementInputs[p] === String(forbidden)}>
-                    <Ban size={13} /> not {forbidden}
+                <span class="who">
+                  <span class="name">
+                    {p}
+                    {#if isDealer}<span class="badge">Dealer</span>{/if}
                   </span>
-                {/if}
+                  {#if isDealer && forbidden !== null}
+                    <span class="hint" class:clash={judgementInputs[p] === String(forbidden)}>
+                      <Ban size={13} /> Can't call {forbidden}
+                    </span>
+                  {/if}
+                </span>
                 <input
                   type="text"
                   inputmode="numeric"
@@ -969,6 +982,14 @@
     padding: 0.2rem 0.5rem;
   }
 
+  .who {
+    display: flex;
+    flex-direction: column;
+    gap: 0.15rem;
+    margin-right: auto;
+    min-width: 0;
+  }
+
   .hint {
     display: inline-flex;
     align-items: center;
@@ -1241,6 +1262,82 @@
     }
   }
 
+  /* Desktop: the three cards fill most of the screen; scoresheet and chart sit below. */
+  @media (min-width: 961px) {
+    .game {
+      grid-template-rows: minmax(clamp(480px, calc(100svh - 230px), 780px), auto) auto;
+    }
+
+    .round-head h1 {
+      font-size: 3rem;
+    }
+
+    .area-board :global(.board) {
+      font-size: 1.4rem;
+    }
+
+    .area-board :global(.board li) {
+      padding: 1rem 1.15rem;
+    }
+
+    .area-board :global(.board h2),
+    .entry h2,
+    .area-trump h2 {
+      font-size: 1.6rem;
+      margin-bottom: 1.5rem;
+    }
+
+    .row {
+      padding: 0.7rem 0;
+    }
+
+    .name {
+      font-size: 1.35rem;
+    }
+
+    .badge {
+      font-size: 0.75rem;
+    }
+
+    .hint {
+      font-size: 0.95rem;
+    }
+
+    .cols span,
+    .called,
+    .row input {
+      width: 6rem;
+    }
+
+    .called,
+    .row input {
+      font-size: 1.6rem;
+      padding: 0.65rem;
+    }
+
+    .tally {
+      font-size: 1.05rem;
+    }
+
+    .entry button {
+      padding: 1rem 1.4rem;
+      font-size: 1.15rem;
+    }
+
+    .playing-card {
+      width: 210px;
+    }
+
+    .suit-name {
+      font-size: 2.1rem;
+      margin-top: 1.75rem;
+    }
+
+    .dealer {
+      font-size: 1.2rem;
+    }
+  }
+
   @media (max-width: 960px) {
     .game {
       grid-template-columns: 1fr;
@@ -1273,7 +1370,7 @@
 
     .playing-card {
       grid-column: 1;
-      grid-row: 1 / 4;
+      grid-row: 1 / 3;
       width: 72px;
     }
 
@@ -1288,11 +1385,48 @@
     .over-grid {
       grid-template-columns: 1fr;
     }
+
+    .progress {
+      flex: 1;
+      width: auto;
+    }
+
+    .round-head {
+      flex: 1;
+      min-width: 0;
+    }
+
+    .toolbar {
+      margin-left: auto;
+    }
+
+    .trump-body {
+      align-content: center;
+    }
+
+    .over-actions {
+      flex-direction: column;
+      align-items: stretch;
+    }
   }
 
   @media (max-width: 560px) {
     .names {
       grid-template-columns: 1fr;
+    }
+
+    /* Icon-only toolbar on phones; buttons keep aria-labels. */
+    .toolbar .label {
+      display: none;
+    }
+
+    .progress-label {
+      display: none;
+    }
+
+    .round-head h1 {
+      font-size: clamp(1.6rem, 7.5vw, 2rem);
+      white-space: nowrap;
     }
   }
 </style>

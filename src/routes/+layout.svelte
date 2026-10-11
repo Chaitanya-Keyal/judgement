@@ -103,7 +103,7 @@
 
   main {
     padding: clamp(1rem, 4vw, 2.5rem);
-    max-width: 1200px;
+    max-width: 1440px;
     margin: 0 auto;
   }
 

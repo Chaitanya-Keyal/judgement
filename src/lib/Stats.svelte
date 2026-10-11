@@ -99,6 +99,34 @@
           </tbody>
         </table>
       </div>
+      <!-- Phones: one card per player instead of a wide table. -->
+      <ul class="player-cards">
+        {#each stats.players as s (s.player)}
+          <li>
+            <span class="name">{s.player}</span>
+            <dl>
+              <div>
+                <dt>Games</dt>
+                <dd>{s.games}</dd>
+              </div>
+              <div>
+                <dt>Wins</dt>
+                <dd>{s.wins}</dd>
+              </div>
+              <div>
+                <dt>Exact</dt>
+                <dd>{pct(s.exactRate)}</dd>
+              </div>
+              <div>
+                <dt>Calls vs made</dt>
+                <dd class:over={s.bidBias >= 0.05} class:under={s.bidBias <= -0.05}>
+                  {bias(s.bidBias)}
+                </dd>
+              </div>
+            </dl>
+          </li>
+        {/each}
+      </ul>
       <p class="note">
         "Calls vs made" is the average gap per round between what a player called and what they
         made.
@@ -171,7 +199,7 @@
 
   .tiles {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
     gap: 1rem;
   }
 
@@ -333,5 +361,64 @@
 
   .icon-only {
     padding: 0.5rem;
+  }
+
+  .player-cards {
+    display: none;
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+
+  .player-cards li {
+    padding: 0.85rem 0;
+    border-bottom: 1px solid var(--border-soft);
+  }
+
+  .player-cards li:first-child {
+    padding-top: 0;
+  }
+
+  .player-cards dl {
+    display: grid;
+    grid-template-columns: repeat(4, auto);
+    justify-content: space-between;
+    gap: 0.5rem;
+    margin: 0.4rem 0 0;
+  }
+
+  .player-cards dt {
+    font-size: 0.68rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--muted);
+  }
+
+  .player-cards dd {
+    margin: 0.1rem 0 0;
+    font-weight: 600;
+    font-variant-numeric: tabular-nums;
+  }
+
+  dd.over {
+    color: #ffb27a;
+  }
+
+  dd.under {
+    color: #8cc2ff;
+  }
+
+  @media (max-width: 560px) {
+    .table-wrap {
+      display: none;
+    }
+
+    .player-cards {
+      display: block;
+    }
+
+    .value {
+      font-size: 1.6rem;
+    }
   }
 </style>
