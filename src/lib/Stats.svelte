@@ -1,19 +1,33 @@
 <script lang="ts">
+  import ChevronRight from '@lucide/svelte/icons/chevron-right';
   import Download from '@lucide/svelte/icons/download';
   import Flame from '@lucide/svelte/icons/flame';
   import Layers from '@lucide/svelte/icons/layers';
   import Trash2 from '@lucide/svelte/icons/trash-2';
   import TrendingDown from '@lucide/svelte/icons/trending-down';
   import Trophy from '@lucide/svelte/icons/trophy';
-  import { downloadLog, newLogName, playersOf, winners, type FinishedGame } from './game';
+  import {
+    downloadLog,
+    listNames,
+    newLogName,
+    playersOf,
+    winners,
+    type FinishedGame,
+  } from './game';
   import { computeStats } from './stats';
 
   let {
     history,
     onclear,
     ondelete,
-  }: { history: FinishedGame[]; onclear: () => void; ondelete: (g: FinishedGame) => void } =
-    $props();
+    viewHref,
+  }: {
+    history: FinishedGame[];
+    onclear: () => void;
+    ondelete: (g: FinishedGame) => void;
+    /** Link to a game's full end screen. */
+    viewHref: (g: FinishedGame) => string;
+  } = $props();
 
   const stats = $derived(computeStats(history));
   const recent = $derived([...history].reverse());
@@ -142,14 +156,14 @@
         {#each recent as g (g.id)}
           {@const won = winners(g.rounds)}
           <li>
-            <div class="game-info">
-              <span class="game-date">{date(g.finishedAt)}</span>
+            <a class="game-info" href={viewHref(g)} title="View this game">
+              <span class="game-date">{date(g.finishedAt)} <ChevronRight size={15} /></span>
               <span class="game-meta">
                 <Trophy size={13} />
-                {won.join(' and ')}{won.length > 1 ? ' (tie)' : ''} with {g.rounds.scores[won[0]]}
+                {listNames(won)}{won.length > 1 ? ' (tie)' : ''} with {g.rounds.scores[won[0]]}
               </span>
               <span class="game-players">{playersOf(g.rounds).join(', ')}</span>
-            </div>
+            </a>
             <button
               class="ghost small icon-only"
               title="Download game log"
@@ -332,6 +346,31 @@
     gap: 0.15rem;
     flex: 1;
     min-width: 0;
+    color: inherit;
+    text-decoration: none;
+    border-radius: var(--radius-sm);
+    padding: 0.4rem 0.6rem;
+    margin: -0.4rem -0.6rem;
+    transition: background 140ms;
+  }
+
+  .game-info:hover {
+    background: var(--surface-2);
+  }
+
+  .game-info:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 2px;
+  }
+
+  .game-date {
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+  }
+
+  .game-date :global(svg) {
+    color: var(--muted);
   }
 
   .game-date {

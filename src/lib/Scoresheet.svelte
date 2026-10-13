@@ -3,7 +3,8 @@
   import { currentRound, playerRound, playersOf, round, totalRounds, type Rounds } from './game';
   import SuitIcon from './SuitIcon.svelte';
 
-  let { rounds, onedit }: { rounds: Rounds; onedit: (n: number) => void } = $props();
+  // Without `onedit` the sheet is read-only and shows no edit buttons.
+  let { rounds, onedit }: { rounds: Rounds; onedit?: (n: number) => void } = $props();
 
   const players = $derived(playersOf(rounds));
   const curr = $derived(currentRound(rounds));
@@ -31,7 +32,7 @@
                 <SuitIcon suit={info.suit} size={14} />
               </span>
               <span class="n">{n}</span>
-              {#if played}
+              {#if played && onedit}
                 <button
                   class="edit"
                   title="Edit round of {n}"
@@ -70,8 +71,8 @@
   </table>
 </div>
 <p class="legend">
-  Each cell shows the round score, then called / made. Shaded cells mark the dealer. Tap the pencil
-  to fix a round.
+  Each cell shows the round score, then called / made. Shaded cells mark the dealer.
+  {#if onedit}Tap the pencil to fix a round.{/if}
 </p>
 
 <style>

@@ -15,9 +15,9 @@
   import RotateCcw from '@lucide/svelte/icons/rotate-ccw';
   import Table from '@lucide/svelte/icons/table';
   import Trash2 from '@lucide/svelte/icons/trash-2';
-  import Trophy from '@lucide/svelte/icons/trophy';
   import Users from '@lucide/svelte/icons/users';
   import EditRound from '#lib/EditRound.svelte';
+  import GameSummary from '#lib/GameSummary.svelte';
   import ScoreBoard from '#lib/ScoreBoard.svelte';
   import ScoreChart from '#lib/ScoreChart.svelte';
   import Scoresheet from '#lib/Scoresheet.svelte';
@@ -47,7 +47,6 @@
     titleCase,
     totalRounds,
     turnOrder,
-    winners,
     type SavedGame,
     type Suit,
   } from '#lib/game.ts';
@@ -560,20 +559,9 @@
     </section>
   </div>
 {:else if game}
-  {@const won = winners(game.rounds)}
   {@render toolbar()}
-  <section class="over">
-    <div class="winner">
-      <span class="trophy"><Trophy size={30} /></span>
-      {#if won.length === 1}
-        <h1>{won[0]} wins!</h1>
-      {:else}
-        <h1>It's a tie!</h1>
-        <p>{won.join(' and ')} share the top spot.</p>
-      {/if}
-    </div>
-
-    <div class="over-actions">
+  <GameSummary rounds={game.rounds} onedit={(n) => (editing = n)}>
+    {#snippet actions()}
       <button class="primary big" onclick={playAgain}><RotateCcw size={18} /> Play Again</button>
       <button class="ghost big" onclick={() => game && newGame(playersOf(game.rounds))}>
         <Users size={18} /> New Players
@@ -581,18 +569,8 @@
       <button class="ghost big" onclick={() => game && downloadLog(game)}>
         <Download size={18} /> Download Log
       </button>
-    </div>
-
-    <div class="over-grid">
-      <ScoreBoard rounds={game.rounds} />
-      <div class="card"><ScoreChart rounds={game.rounds} /></div>
-    </div>
-
-    <div class="card sheet-card">
-      <h2>Scoresheet</h2>
-      <Scoresheet rounds={game.rounds} onedit={(n) => (editing = n)} />
-    </div>
-  </section>
+    {/snippet}
+  </GameSummary>
 {/if}
 
 {#if game && editing !== null}
@@ -1196,65 +1174,6 @@
   }
 
   /* Game over */
-  .over {
-    display: flex;
-    flex-direction: column;
-    gap: 1.5rem;
-  }
-
-  .winner {
-    text-align: center;
-  }
-
-  .trophy {
-    display: inline-grid;
-    place-items: center;
-    width: 64px;
-    height: 64px;
-    border-radius: 20px;
-    background: rgb(245 196 81 / 0.12);
-    color: var(--gold);
-    margin-bottom: 0.75rem;
-  }
-
-  .winner h1 {
-    margin: 0;
-    font-size: clamp(2.25rem, 6vw, 3.25rem);
-    color: var(--gold);
-  }
-
-  .winner p {
-    margin: 0.4rem 0 0;
-    color: var(--muted);
-  }
-
-  .over-actions {
-    display: flex;
-    flex-wrap: wrap;
-    justify-content: center;
-    gap: 0.75rem;
-  }
-
-  .over-grid {
-    display: grid;
-    grid-template-columns: 320px 1fr;
-    gap: 1.5rem;
-    align-items: start;
-  }
-
-  .over-grid > .card {
-    min-width: 0;
-  }
-
-  .sheet-card {
-    min-width: 0;
-  }
-
-  .sheet-card h2 {
-    margin: 0 0 1rem;
-    font-size: 1.25rem;
-  }
-
   @keyframes rise {
     from {
       opacity: 0;
@@ -1382,10 +1301,6 @@
       margin: 0;
     }
 
-    .over-grid {
-      grid-template-columns: 1fr;
-    }
-
     .progress {
       flex: 1;
       width: auto;
@@ -1402,11 +1317,6 @@
 
     .trump-body {
       align-content: center;
-    }
-
-    .over-actions {
-      flex-direction: column;
-      align-items: stretch;
     }
   }
 

@@ -189,6 +189,13 @@ export function winners(rounds: Rounds): string[] {
   return Object.keys(rounds.scores).filter((p) => rounds.scores[p] === top);
 }
 
+const nameList = new Intl.ListFormat('en-GB', { style: 'long', type: 'conjunction' });
+
+/** "Ann", "Ann and Ben", "Ann, Ben and Cat". */
+export function listNames(names: string[]): string {
+  return nameList.format(names);
+}
+
 /** Players sorted by score, with shared ranks for ties (1, 1, 3, ...). */
 export function standings(rounds: Rounds): { player: string; score: number; rank: number }[] {
   const sorted = Object.entries(rounds.scores).sort((a, b) => b[1] - a[1]);
