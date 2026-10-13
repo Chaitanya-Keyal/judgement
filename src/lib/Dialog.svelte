@@ -110,6 +110,7 @@
     margin: 0;
     color: var(--muted);
     line-height: 1.5;
+    overflow-wrap: anywhere;
   }
 
   .actions {

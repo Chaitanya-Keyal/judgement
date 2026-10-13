@@ -280,11 +280,21 @@ export function removeFromHistory(id: string): FinishedGame[] {
   return history;
 }
 
-/** Adds a finished game to the history, replacing any earlier copy (e.g. after an edit). */
-export function recordFinished(game: SavedGame): FinishedGame[] {
+/**
+ * Adds a finished game to the history. A game already there (e.g. after an edit) is updated
+ * in place and keeps its original finish time.
+ */
+export function recordFinished(game: SavedGame, finishedAt?: string | null): FinishedGame[] {
   const id = gameId(game);
-  const history = loadHistory().filter((g) => g.id !== id);
-  history.push({ id, finishedAt: new Date().toISOString(), rounds: clone(game.rounds) });
+  const history = loadHistory();
+  const index = history.findIndex((g) => g.id === id);
+  const entry = {
+    id,
+    finishedAt: finishedAt ?? history[index]?.finishedAt ?? new Date().toISOString(),
+    rounds: clone(game.rounds),
+  };
+  if (index === -1) history.push(entry);
+  else history[index] = entry;
   localStorage.setItem(HISTORY_KEY, JSON.stringify(history));
   return history;
 }

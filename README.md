@@ -11,6 +11,8 @@ everything stays in your browser, and any game can be downloaded as a JSON log a
 - Scoresheet with edit-any-round, running-score chart, tie-aware standings
 - Auto-saves to `localStorage` on every keystroke; resume after a refresh or closed tab
 - Stats across finished games (wins, exact-call rate, over/under-bidding, records)
+- Share a finished game as a short link: the whole game is packed into the URL fragment
+  (`/g#...`), so it works with no backend and never reaches a server
 - Rules page, installable PWA that works offline, keeps the screen awake during a game
 
 ## Development
@@ -29,7 +31,8 @@ GitHub Pages via `.github/workflows/deploy.yml`.
 
 - `src/lib/game.ts`: rules, scoring, persistence (no UI)
 - `src/lib/stats.ts`: cross-game stats
-- `src/routes/`: play (`/`), rules (`/rules`), stats (`/stats`)
+- `src/lib/share.ts`: share-link encoding (bit-packed, base64url, checksummed)
+- `src/routes/`: play (`/`), rules (`/rules`), stats (`/stats`), shared game (`/g`)
 - `src/service-worker/`: offline precache
 
 ## License

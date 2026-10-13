@@ -13,6 +13,7 @@
   import Play from '@lucide/svelte/icons/play';
   import Plus from '@lucide/svelte/icons/plus';
   import RotateCcw from '@lucide/svelte/icons/rotate-ccw';
+  import Share2 from '@lucide/svelte/icons/share-2';
   import Table from '@lucide/svelte/icons/table';
   import Trash2 from '@lucide/svelte/icons/trash-2';
   import Users from '@lucide/svelte/icons/users';
@@ -24,6 +25,7 @@
   import SuitIcon from '#lib/SuitIcon.svelte';
   import { choose, showMessage } from '#lib/dialog.svelte.ts';
   import { digitsOnly } from '#lib/digits.ts';
+  import { shareGame } from '#lib/shareLink.ts';
   import {
     clearCurrent,
     createRounds,
@@ -262,6 +264,12 @@
   }
 
   // ---- End ----
+
+  function shareFinished() {
+    if (!game) return;
+    const id = gameId(game);
+    shareGame(game.rounds, history.find((g) => g.id === id)?.finishedAt);
+  }
 
   function playAgain() {
     if (!game) return;
@@ -566,6 +574,7 @@
       <button class="ghost big" onclick={() => game && newGame(playersOf(game.rounds))}>
         <Users size={18} /> New Players
       </button>
+      <button class="ghost big" onclick={shareFinished}><Share2 size={18} /> Share</button>
       <button class="ghost big" onclick={() => game && downloadLog(game)}>
         <Download size={18} /> Download Log
       </button>

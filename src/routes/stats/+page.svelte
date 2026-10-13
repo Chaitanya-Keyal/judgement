@@ -1,6 +1,7 @@
 <script lang="ts">
   import ArrowLeft from '@lucide/svelte/icons/arrow-left';
   import Download from '@lucide/svelte/icons/download';
+  import Share2 from '@lucide/svelte/icons/share-2';
   import Trash2 from '@lucide/svelte/icons/trash-2';
   import { goto } from '$app/navigation';
   import { resolve } from '$app/paths';
@@ -16,6 +17,7 @@
     type FinishedGame,
   } from '#lib/game.ts';
   import GameSummary from '#lib/GameSummary.svelte';
+  import { shareGame } from '#lib/shareLink.ts';
   import Stats from '#lib/Stats.svelte';
 
   let history = $state(loadHistory());
@@ -78,6 +80,9 @@
   <a class="back" href={resolve('/stats')}><ArrowLeft size={16} /> All stats</a>
   <GameSummary rounds={g.rounds} subtitle="Played on {fullDate(g.finishedAt)}">
     {#snippet actions()}
+      <button class="primary big" onclick={() => shareGame(g.rounds, g.finishedAt)}>
+        <Share2 size={18} /> Share
+      </button>
       <button class="ghost big" onclick={() => download(g)}>
         <Download size={18} /> Download Log
       </button>
