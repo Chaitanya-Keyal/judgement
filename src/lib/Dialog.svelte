@@ -40,6 +40,7 @@
         <h2 id="dialog-title">{d.title}</h2>
       </div>
       <p>{d.message}</p>
+      {#if d.detail}<code class="detail">{d.detail}</code>{/if}
       <div class="actions">
         {#each d.buttons as b (b.value)}
           <button class={b.variant ?? 'ghost'} onclick={() => closeDialog(b.value)}
@@ -111,6 +112,20 @@
     color: var(--muted);
     line-height: 1.5;
     overflow-wrap: anywhere;
+  }
+
+  .detail {
+    display: block;
+    margin-top: 1rem;
+    padding: 0.75rem;
+    border-radius: var(--radius-sm);
+    background: rgb(0 0 0 / 0.3);
+    border: 1px solid var(--border);
+    font-size: 0.8rem;
+    line-height: 1.45;
+    color: var(--text);
+    overflow-wrap: anywhere;
+    user-select: all;
   }
 
   .actions {

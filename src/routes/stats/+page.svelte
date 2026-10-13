@@ -17,15 +17,17 @@
     type FinishedGame,
   } from '#lib/game.ts';
   import GameSummary from '#lib/GameSummary.svelte';
-  import { shareGame } from '#lib/shareLink.ts';
+  import { shareGame, sharePath } from '#lib/shareLink.ts';
   import Stats from '#lib/Stats.svelte';
 
   let history = $state(loadHistory());
 
-  // `/stats?game=<id>` shows that game's end screen instead of the overview.
+  // Past games open at their share link, so the address bar is always safe to send.
+  // `/stats?game=<id>` is only the fallback for a game that can't be encoded.
   const viewing = $derived(history.find((g) => g.id === page.url.searchParams.get('game')));
 
-  const viewHref = (g: FinishedGame) => `${resolve('/stats')}?game=${encodeURIComponent(g.id)}`;
+  const viewHref = (g: FinishedGame) =>
+    sharePath(g.rounds, g.finishedAt) ?? `${resolve('/stats')}?game=${encodeURIComponent(g.id)}`;
 
   const fullDate = (iso: string) =>
     new Date(iso).toLocaleDateString(undefined, {
@@ -92,7 +94,13 @@
     {/snippet}
   </GameSummary>
 {:else}
-  <Stats {history} onclear={confirmClear} ondelete={confirmDelete} {viewHref} />
+  <Stats
+    {history}
+    onclear={confirmClear}
+    ondelete={confirmDelete}
+    onshare={(g) => shareGame(g.rounds, g.finishedAt)}
+    {viewHref}
+  />
 {/if}
 
 <style>

@@ -3,6 +3,7 @@
   import Download from '@lucide/svelte/icons/download';
   import Flame from '@lucide/svelte/icons/flame';
   import Layers from '@lucide/svelte/icons/layers';
+  import Share2 from '@lucide/svelte/icons/share-2';
   import Trash2 from '@lucide/svelte/icons/trash-2';
   import TrendingDown from '@lucide/svelte/icons/trending-down';
   import Trophy from '@lucide/svelte/icons/trophy';
@@ -20,11 +21,13 @@
     history,
     onclear,
     ondelete,
+    onshare,
     viewHref,
   }: {
     history: FinishedGame[];
     onclear: () => void;
     ondelete: (g: FinishedGame) => void;
+    onshare: (g: FinishedGame) => void;
     /** Link to a game's full end screen. */
     viewHref: (g: FinishedGame) => string;
   } = $props();
@@ -164,6 +167,14 @@
               </span>
               <span class="game-players">{playersOf(g.rounds).join(', ')}</span>
             </a>
+            <button
+              class="ghost small icon-only"
+              title="Share this game"
+              aria-label="Share this game"
+              onclick={() => onshare(g)}
+            >
+              <Share2 size={16} />
+            </button>
             <button
               class="ghost small icon-only"
               title="Download game log"

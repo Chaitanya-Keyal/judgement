@@ -1,12 +1,59 @@
 import { resolve } from '$app/paths';
-import { showMessage } from './dialog.svelte';
+import { choose, showMessage } from './dialog.svelte';
 import type { Rounds } from './game';
 import { encodeGame } from './share';
 
-/** The link that opens this game's end screen for anyone, or null if it can't be shared. */
-export function shareUrl(rounds: Rounds, finishedAt?: string | null): string | null {
+const NOTE = 'Anyone with this link can see the game, including player names and scores.';
+
+/** Path of the page that shows this game to anyone, or null if it can't be shared. */
+export function sharePath(rounds: Rounds, finishedAt?: string | null): string | null {
   const code = encodeGame(rounds, finishedAt);
-  return code ? `${location.origin}${resolve('/g')}#${code}` : null;
+  return code ? `${resolve('/g')}#${code}` : null;
+}
+
+/** The full link to send to someone, or null if the game can't be shared. */
+export function shareUrl(rounds: Rounds, finishedAt?: string | null): string | null {
+  const path = sharePath(rounds, finishedAt);
+  return path ? `${location.origin}${path}` : null;
+}
+
+async function copy(text: string): Promise<boolean> {
+  try {
+    await navigator.clipboard.writeText(text);
+    return true;
+  } catch {
+    // Clipboard API unavailable or blocked: fall back to the legacy command.
+    const field = document.createElement('textarea');
+    field.value = text;
+    field.style.position = 'fixed';
+    field.style.opacity = '0';
+    document.body.append(field);
+    field.select();
+    try {
+      return document.execCommand('copy');
+    } catch {
+      return false;
+    } finally {
+      field.remove();
+    }
+  }
+}
+
+/** Always ends with the link on screen, so sharing can't fail silently. */
+async function showLink(url: string) {
+  const copied = await copy(url);
+  const answer = await choose(
+    copied ? 'Link Copied' : 'Share Link',
+    copied ? NOTE : `Copy the link below to share it. ${NOTE}`,
+    [
+      { label: 'Copy again', value: 'copy', variant: 'ghost' },
+      { label: 'Done', value: 'done', variant: 'primary' },
+    ],
+    'info',
+    0,
+    url,
+  );
+  if (answer === 'copy') await showLink(url);
 }
 
 /** Opens the phone's share sheet, or copies the link on desktop. */
@@ -24,22 +71,11 @@ export async function shareGame(rounds: Rounds, finishedAt?: string | null) {
   if (navigator.share && matchMedia('(pointer: coarse)').matches) {
     try {
       await navigator.share({ title: 'Judgement game', url });
-    } catch {
-      // Share sheet dismissed.
+      return;
+    } catch (e) {
+      // Closing the share sheet is fine; any other failure falls through to the link dialog.
+      if (e instanceof DOMException && e.name === 'AbortError') return;
     }
-    return;
   }
-
-  try {
-    await navigator.clipboard.writeText(url);
-    showMessage(
-      'Link Copied',
-      'Anyone with the link can see this game, including player names and scores.',
-      'info',
-      4000,
-    );
-  } catch {
-    // Clipboard blocked: show the link so it can be copied by hand.
-    showMessage('Share Link', url);
-  }
+  await showLink(url);
 }

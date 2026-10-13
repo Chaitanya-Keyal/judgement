@@ -11,6 +11,8 @@ export interface DialogButton {
 interface DialogState {
   title: string;
   message: string;
+  /** Extra text shown in a selectable box, e.g. a link to copy. */
+  detail?: string;
   tone: 'info' | 'error' | 'question';
   buttons: DialogButton[];
   resolve: (value: string | null) => void;
@@ -27,10 +29,11 @@ export function choose(
   buttons: DialogButton[],
   tone: DialogState['tone'] = 'question',
   timeout = 0,
+  detail?: string,
 ): Promise<string | null> {
   dialog.current?.resolve(null);
   return new Promise((resolve) => {
-    dialog.current = { title, message, tone, buttons, resolve };
+    dialog.current = { title, message, detail, tone, buttons, resolve };
     clearTimeout(timer);
     if (timeout) timer = setTimeout(() => closeDialog(null), timeout);
   });

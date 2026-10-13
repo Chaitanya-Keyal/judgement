@@ -1,25 +1,44 @@
 <script lang="ts">
-  import Check from '@lucide/svelte/icons/check';
+  import ArrowLeft from '@lucide/svelte/icons/arrow-left';
   import CircleAlert from '@lucide/svelte/icons/circle-alert';
   import Download from '@lucide/svelte/icons/download';
   import ListPlus from '@lucide/svelte/icons/list-plus';
   import Play from '@lucide/svelte/icons/play';
+  import Share2 from '@lucide/svelte/icons/share-2';
+  import Trash2 from '@lucide/svelte/icons/trash-2';
   import { goto } from '$app/navigation';
   import { resolve } from '$app/paths';
   import { page } from '$app/state';
-  import { downloadLog, loadHistory, newId, newLogName, recordFinished } from '#lib/game.ts';
+  import { choose } from '#lib/dialog.svelte.ts';
+  import {
+    downloadLog,
+    loadHistory,
+    newId,
+    newLogName,
+    recordFinished,
+    removeFromHistory,
+  } from '#lib/game.ts';
   import GameSummary from '#lib/GameSummary.svelte';
   import { decodeGame, encodeGame } from '#lib/share.ts';
+  import { shareGame } from '#lib/shareLink.ts';
 
   let history = $state(loadHistory());
 
   // The whole game travels in the URL fragment, which never reaches the server.
+  // This page is both what a recipient sees and how you view your own past games.
   const shared = $derived.by(() => {
     try {
       return decodeGame(page.url.hash.slice(1));
     } catch {
       return null;
     }
+  });
+
+  /** This game's entry in your own stats, if it is there. */
+  const mine = $derived.by(() => {
+    if (!shared) return undefined;
+    const key = encodeGame(shared.rounds);
+    return history.find((g) => encodeGame(g.rounds) === key);
   });
 
   const playedOn = $derived(
@@ -32,35 +51,51 @@
       : null,
   );
 
-  const inStats = $derived.by(() => {
-    if (!shared) return false;
-    const key = encodeGame(shared.rounds);
-    return history.some((g) => encodeGame(g.rounds) === key);
-  });
-
   const fileName = () => newLogName(shared?.finishedAt ? new Date(shared.finishedAt) : new Date());
 
   function addToStats() {
-    if (!shared || inStats) return;
+    if (!shared || mine) return;
     history = recordFinished(
       { id: newId(), fileName: fileName(), rounds: shared.rounds },
       shared.finishedAt,
     );
   }
+
+  async function confirmDelete() {
+    if (!mine) return;
+    const answer = await choose(
+      'Delete Game',
+      'Delete this game from your stats? Links to it that you already shared keep working.',
+      [
+        { label: 'Cancel', value: 'cancel', variant: 'ghost' },
+        { label: 'Delete game', value: 'delete', variant: 'danger' },
+      ],
+      'error',
+    );
+    if (answer !== 'delete') return;
+    removeFromHistory(mine.id);
+    await goto(resolve('/stats'));
+  }
 </script>
 
 <svelte:head>
-  <title>Shared game | Judgement</title>
+  <title>{playedOn ? `Game on ${playedOn}` : 'Shared game'} | Judgement</title>
   <meta name="robots" content="noindex" />
 </svelte:head>
 
 {#if shared}
   {@const game = shared}
-  <p class="label">Shared game</p>
+  {#if mine}
+    <a class="back" href={resolve('/stats')}><ArrowLeft size={16} /> All stats</a>
+  {:else}
+    <p class="label">Shared game</p>
+  {/if}
   <GameSummary rounds={game.rounds} subtitle={playedOn ? `Played on ${playedOn}` : undefined}>
     {#snippet actions()}
-      {#if inStats}
-        <button class="ghost big" disabled><Check size={18} /> In Your Stats</button>
+      {#if mine}
+        <button class="primary big" onclick={() => shareGame(game.rounds, game.finishedAt)}>
+          <Share2 size={18} /> Share
+        </button>
       {:else}
         <button class="primary big" onclick={addToStats}>
           <ListPlus size={18} /> Add to My Stats
@@ -72,9 +107,15 @@
       >
         <Download size={18} /> Download Log
       </button>
-      <button class="ghost big" onclick={() => goto(resolve('/'))}>
-        <Play size={18} /> Play Your Own
-      </button>
+      {#if mine}
+        <button class="ghost big delete" onclick={confirmDelete}>
+          <Trash2 size={18} /> Delete Game
+        </button>
+      {:else}
+        <button class="ghost big" onclick={() => goto(resolve('/'))}>
+          <Play size={18} /> Play Your Own
+        </button>
+      {/if}
     {/snippet}
   </GameSummary>
 {:else}
@@ -92,6 +133,26 @@
 {/if}
 
 <style>
+  .back {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    margin-bottom: 1rem;
+    color: var(--muted);
+    text-decoration: none;
+    font-size: 0.9rem;
+    font-weight: 500;
+  }
+
+  .back:hover {
+    color: var(--text);
+  }
+
+  .delete:hover {
+    color: var(--danger);
+    border-color: rgb(255 93 108 / 0.4);
+  }
+
   .label {
     margin: 0 0 0.5rem;
     text-align: center;
