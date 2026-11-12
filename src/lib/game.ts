@@ -213,7 +213,7 @@ export function newId(): string {
 export function newLogName(d = new Date()): string {
   const p = (x: number) => String(x).padStart(2, '0');
   return (
-    `judgment_game_log_${p(d.getDate())}-${p(d.getMonth() + 1)}-${d.getFullYear()}_` +
+    `judgement_game_log_${p(d.getDate())}-${p(d.getMonth() + 1)}-${d.getFullYear()}_` +
     `${p(d.getHours())}-${p(d.getMinutes())}-${p(d.getSeconds())}.json`
   );
 }
